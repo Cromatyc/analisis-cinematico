@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Análisis Cinemático de Mecanismos</title>
+  <meta name="description" content="Posición, velocidad y aceleración de mecanismos de cuatro barras y manivela-corredera (método de Norton)." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='6' cy='26' r='4' fill='%232563eb'/%3E%3Cpath d='M6 26 L12 10 L26 6 L26 26' stroke='%232563eb' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body>
+  <header class="barra">
+    <div class="marca">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="6" cy="26" r="3.5"/><circle cx="26" cy="26" r="3.5"/><path d="M6 26 L11 11 L24 7 L26 26"/></svg>
+      <div>
+        <h1>Análisis Cinemático</h1>
+        <p>Posición · velocidad · aceleración — método de Norton</p>
+      </div>
+    </div>
+    <nav class="pestanas" role="tablist">
+      <button role="tab" data-modo="cuatroBarras" class="activa">Manivela-balancín</button>
+      <button role="tab" data-modo="manivelaCorredera">Manivela-corredera</button>
+      <button role="tab" data-modo="verificacion">Verificación Norton</button>
+    </nav>
+    <button id="tema" class="icono" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">◐</button>
+  </header>
+
+  <main id="vista-calculo" class="contenido">
+    <!-- ================= ENTRADAS ================= -->
+    <aside class="panel entradas">
+      <div class="panel-titulo">
+        <h2>Datos de entrada</h2>
+        <select id="ejemplo" title="Cargar datos de ejemplo"></select>
+      </div>
+
+      <form id="form" autocomplete="off" onsubmit="return false">
+        <fieldset>
+          <legend>Eslabones <span class="nota">(longitudes en unidades consistentes)</span></legend>
+          <div class="rejilla" id="campos-eslabones"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Eslabón de entrada (2)</legend>
+          <div class="campo ancho">
+            <label for="th2">θ2 <span class="u">°</span></label>
+            <div class="slider-fila">
+              <input type="range" id="th2-rango" min="0" max="360" step="0.5" />
+              <input type="number" id="th2" step="any" />
+            </div>
+          </div>
+          <div class="rejilla">
+            <div class="campo"><label for="w2">ω2 <span class="u">rad/s</span></label><input type="number" id="w2" step="any" /></div>
+            <div class="campo"><label for="al2">α2 <span class="u">rad/s²</span></label><input type="number" id="al2" step="any" /></div>
+          </div>
+          <div class="segmentado" role="radiogroup" aria-label="Configuración">
+            <button type="button" data-conf="abierta" class="activa">Abierta</button>
+            <button type="button" data-conf="cruzada">Cruzada</button>
+          </div>
+        </fieldset>
+
+        <details>
+          <summary>Centros de gravedad <span class="nota">(opcional)</span></summary>
+          <p class="ayuda">R<sub>g</sub> se mide desde el pivote del eslabón (O2, A, O4) y δ respecto a la línea del eslabón.</p>
+          <div class="rejilla" id="campos-cg"></div>
+        </details>
+
+        <details>
+          <summary>Puntos P <span class="nota">(opcional)</span></summary>
+          <p class="ayuda">R<sub>P</sub> se mide desde el CG del eslabón y δ<sub>RP</sub> respecto a la línea del eslabón.</p>
+          <div class="rejilla" id="campos-p"></div>
+        </details>
+      </form>
+
+      <div id="error" class="error" hidden></div>
+    </aside>
+
+    <!-- ================= DIBUJO Y RESULTADOS ================= -->
+    <section class="columna">
+      <div class="panel lienzo-panel">
+        <div class="panel-titulo">
+          <h2>Mecanismo</h2>
+          <div class="controles">
+            <label class="chip"><input type="checkbox" id="ver-vel" checked /> <span class="punto v"></span>Velocidades</label>
+            <label class="chip"><input type="checkbox" id="ver-acc" /> <span class="punto a"></span>Aceleraciones</label>
+            <label class="chip"><input type="checkbox" id="ver-tray" checked /> Trayectorias</label>
+            <button id="animar" class="boton">▶ Animar</button>
+          </div>
+        </div>
+        <canvas id="lienzo" height="380"></canvas>
+        <p class="leyenda">Las flechas están a escala relativa (cada tipo se normaliza a su mayor magnitud).</p>
+      </div>
+
+      <div class="tarjetas" id="resumen"></div>
+
+      <div class="panel">
+        <div class="panel-titulo">
+          <h2>Resultados</h2>
+          <div class="controles">
+            <button id="copiar" class="boton secundario">Copiar</button>
+            <button id="csv" class="boton secundario">CSV (vuelta completa)</button>
+          </div>
+        </div>
+        <div id="resultados" class="resultados"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-titulo">
+          <h2>Una vuelta de la manivela</h2>
+          <select id="magnitud"></select>
+        </div>
+        <canvas id="grafica" height="260"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <main id="vista-verificacion" class="contenido unica" hidden>
+    <section class="panel">
+      <div class="panel-titulo"><h2>Verificación contra Norton, <em>Diseño de Maquinaria</em> 4a Ed.</h2></div>
+      <p class="ayuda">Se recalculan las 7 filas (a–g) de las Tablas P11-1, P11-2 (manivela-corredera) y P11-3 (cuatro barras)
+        y se comparan todas las columnas de posición, velocidad y aceleración. Los valores marcados como <span class="et errata">errata</span>
+        son inconsistentes dentro de la misma fila del libro; la explicación está en cada uno.</p>
+      <div id="verif-resumen" class="tarjetas"></div>
+      <div id="verif-tablas"></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    Fórmulas: Norton, <em>Diseño de Maquinaria</em> 4a Ed., ecs. 4.10, 4.17, 6.18, 6.22, 7.12 y 7.16.
+  </footer>
+
+  <script src="js/cinematica.js"></script>
+  <script src="js/datos-norton.js"></script>
+  <script src="js/verificacion.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

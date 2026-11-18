@@ -1,0 +1,11 @@
+# Material con derechos de autor: no subir
+*.pdf
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__pycache__/
+node_modules/
+.claude/
