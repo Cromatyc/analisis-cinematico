@@ -6,7 +6,7 @@
   <title>Análisis Cinemático de Mecanismos</title>
   <meta name="description" content="Posición, velocidad y aceleración de mecanismos de cuatro barras y manivela-corredera (método de Norton)." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='6' cy='26' r='4' fill='%232563eb'/%3E%3Cpath d='M6 26 L12 10 L26 6 L26 26' stroke='%232563eb' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/estilos.css?v=5" />
+  <link rel="stylesheet" href="css/estilos.css?v=6" />
 </head>
 <body>
   <header class="barra">
@@ -14,13 +14,13 @@
       <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="6" cy="26" r="3.5"/><circle cx="26" cy="26" r="3.5"/><path d="M6 26 L11 11 L24 7 L26 26"/></svg>
       <div>
         <h1>Análisis Cinemático</h1>
-        <p>Posición · velocidad · aceleración — método de Norton</p>
+        <p>Posición, velocidad y aceleración de mecanismos</p>
       </div>
     </div>
     <nav class="pestanas" role="tablist">
       <button role="tab" data-modo="cuatroBarras" class="activa">Manivela-balancín</button>
       <button role="tab" data-modo="manivelaCorredera">Manivela-corredera</button>
-      <button role="tab" data-modo="verificacion">Verificación Norton</button>
+      <button role="tab" data-modo="verificacion">Verificación</button>
     </nav>
     <button id="tema" class="icono" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">◐</button>
   </header>
@@ -29,49 +29,48 @@
     <!-- ================= ENTRADAS ================= -->
     <aside class="panel entradas">
       <div class="panel-titulo">
-        <h2>Datos de entrada</h2>
+        <h2>Datos</h2>
         <select id="ejemplo" title="Cargar datos de ejemplo"></select>
       </div>
 
       <form id="form" autocomplete="off" onsubmit="return false">
         <fieldset>
-          <legend>Eslabones <span class="nota">(longitudes en unidades consistentes)</span></legend>
+          <legend>Longitudes <span class="nota">misma unidad en todas</span></legend>
           <div class="rejilla" id="campos-eslabones"></div>
         </fieldset>
 
         <fieldset>
-          <legend>Eslabón de entrada (2)</legend>
+          <legend>Manivela <span class="nota">eslabón de entrada (2)</span></legend>
           <div class="campo ancho">
-            <label for="th2">θ2 <span class="u">°</span></label>
+            <label for="th2">Ángulo θ2 <span class="u">grados</span></label>
             <div class="slider-fila">
-              <input type="range" id="th2-rango" min="0" max="360" step="0.5" />
+              <input type="range" id="th2-rango" min="0" max="360" step="0.5" aria-label="Ángulo θ2" />
               <input type="number" id="th2" step="any" />
             </div>
           </div>
           <div class="rejilla">
-            <div class="campo"><label for="w2">ω2 <span class="u">rad/s</span></label><input type="number" id="w2" step="any" /></div>
-            <div class="campo"><label for="al2">α2 <span class="u">rad/s²</span></label><input type="number" id="al2" step="any" /></div>
+            <div class="campo"><label for="w2">Velocidad ω2 <span class="u">rad/s</span></label><input type="number" id="w2" step="any" /></div>
+            <div class="campo"><label for="al2">Aceleración α2 <span class="u">rad/s²</span></label><input type="number" id="al2" step="any" /></div>
           </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Configuración</legend>
           <div class="segmentado" role="radiogroup" aria-label="Configuración">
             <button type="button" data-conf="abierta" class="activa">Abierta</button>
             <button type="button" data-conf="cruzada">Cruzada</button>
           </div>
         </fieldset>
 
-        <details>
-          <summary>Centros de gravedad <span class="nota">(opcional)</span></summary>
-          <p class="ayuda">R<sub>g</sub> se mide desde el pivote del eslabón (O2, A, O4) y δ respecto a la línea del eslabón.</p>
+        <details class="avanzado">
+          <summary>Opciones avanzadas <span class="nota">centros de gravedad, puntos y fuerzas</span></summary>
+          <h4>Centros de gravedad</h4>
+          <p class="ayuda">Distancia R<sub>g</sub> desde el pivote del eslabón y ángulo δ medido desde la línea del eslabón.</p>
           <div class="rejilla" id="campos-cg"></div>
-        </details>
-
-        <details>
-          <summary>Puntos P <span class="nota">(opcional)</span></summary>
-          <p class="ayuda">R<sub>P</sub> se mide desde el CG del eslabón y δ<sub>RP</sub> respecto a la línea del eslabón.</p>
+          <h4>Puntos P</h4>
+          <p class="ayuda">Distancia R<sub>P</sub> desde el centro de gravedad y ángulo δ medido desde la línea del eslabón.</p>
           <div class="rejilla" id="campos-p"></div>
-        </details>
-
-        <details id="det-din">
-          <summary>Dinámica · fuerzas <span class="nota">(cap. 11)</span></summary>
+          <h4>Fuerzas (dinámica)</h4>
           <p class="ayuda" id="ayuda-din"></p>
           <div class="rejilla" id="campos-din"></div>
         </details>
@@ -80,47 +79,55 @@
       <div id="error" class="error" hidden></div>
     </aside>
 
-    <!-- ================= DIBUJO Y RESULTADOS ================= -->
+    <!-- ================= RESULTADOS ================= -->
     <section class="columna">
-      <div class="resumen-cabecera">
-        <h2>Resultados principales</h2>
-        <span class="nota">se actualizan solos al cambiar cualquier dato</span>
+      <div class="panel">
+        <div class="panel-titulo">
+          <h2>Resultados</h2>
+          <span class="nota">se actualizan solos al cambiar un dato</span>
+        </div>
+        <div id="simple"></div>
+        <p id="aviso" class="aviso" hidden></p>
       </div>
-      <div class="tarjetas" id="resumen"></div>
 
       <div class="panel lienzo-panel">
         <div class="panel-titulo">
           <h2>Mecanismo</h2>
           <div class="controles">
-            <label class="chip"><input type="checkbox" id="ver-vel" checked /> <span class="punto v"></span>Velocidades</label>
-            <label class="chip"><input type="checkbox" id="ver-acc" /> <span class="punto a"></span>Aceleraciones</label>
-            <label class="chip"><input type="checkbox" id="ver-fza" /> <span class="punto f"></span>Fuerzas</label>
-            <label class="chip"><input type="checkbox" id="ver-tray" checked /> Trayectorias</label>
+            <label class="selector">Flechas
+              <select id="flechas">
+                <option value="">ninguna</option>
+                <option value="v" selected>velocidad</option>
+                <option value="a">aceleración</option>
+                <option value="f">fuerzas</option>
+              </select>
+            </label>
             <button id="animar" class="boton">▶ Animar</button>
           </div>
         </div>
-        <canvas id="lienzo" height="380"></canvas>
-        <p class="leyenda">Las flechas están a escala relativa (cada tipo se normaliza a su mayor magnitud).</p>
+        <canvas id="lienzo"></canvas>
       </div>
 
-      <div class="panel">
-        <div class="panel-titulo">
-          <h2>Resultados</h2>
-          <div class="controles">
-            <button id="copiar" class="boton secundario">Copiar</button>
-            <button id="csv" class="boton secundario">CSV (vuelta completa)</button>
-          </div>
+      <details class="panel detalles" id="detalles">
+        <summary>
+          <span class="t">Más detalles</span>
+          <span class="nota">puntos A y B, datos del mecanismo, fuerzas, gráfica y exportar</span>
+        </summary>
+        <div class="detalles-cuerpo">
+          <section><h3>Puntos del mecanismo</h3><div id="det-puntos"></div></section>
+          <section><h3>Datos del mecanismo</h3><div id="det-datos"></div></section>
+          <section><h3>Fuerzas</h3><div id="det-fuerzas"></div></section>
+          <section>
+            <div class="sub-titulo"><h3>Una vuelta de la manivela</h3><select id="magnitud"></select></div>
+            <canvas id="grafica"></canvas>
+            <p class="nota">Pase el ratón para leer valores; haga clic para llevar el mecanismo a ese ángulo.</p>
+          </section>
+          <section class="controles">
+            <button id="copiar" class="boton secundario">Copiar resultados</button>
+            <button id="csv" class="boton secundario">Descargar CSV (vuelta completa)</button>
+          </section>
         </div>
-        <div id="resultados" class="resultados"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-titulo">
-          <h2>Una vuelta de la manivela</h2>
-          <select id="magnitud"></select>
-        </div>
-        <canvas id="grafica" height="260"></canvas>
-      </div>
+      </details>
     </section>
   </main>
 
@@ -136,13 +143,13 @@
   </main>
 
   <footer class="pie">
-    <a href="docs/Guia-de-uso.pdf" target="_blank" rel="noopener">📄 Guía de uso (PDF)</a> · Fórmulas: Norton, <em>Diseño de Maquinaria</em> 4a Ed., ecs. 4.10, 4.17, 6.18, 6.22, 7.12 y 7.16; fuerzas dinámicas, cap. 11.
+    <a href="docs/Guia-de-uso.pdf" target="_blank" rel="noopener">📄 Guía de uso (PDF)</a> · Basado en Norton, <em>Diseño de Maquinaria</em>, 4a Ed.
   </footer>
 
-  <script src="js/cinematica.js?v=5"></script>
-  <script src="js/dinamica.js?v=5"></script>
-  <script src="js/datos-norton.js?v=5"></script>
-  <script src="js/verificacion.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/cinematica.js?v=6"></script>
+  <script src="js/dinamica.js?v=6"></script>
+  <script src="js/datos-norton.js?v=6"></script>
+  <script src="js/verificacion.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

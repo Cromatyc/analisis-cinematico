@@ -144,7 +144,6 @@ canvas { width: 100%; display: block; border-radius: 10px; background: var(--sup
 /* altura fija: sin esto el lienzo toma la proporción de su tamaño interno y crece sin control */
 #lienzo { height: 380px; }
 #grafica { height: 260px; }
-.resumen-cabecera { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: -8px; }
 .leyenda { margin: 8px 0 0; font-size: 12px; color: var(--texto-3); }
 
 /* ---------------- tarjetas resumen ---------------- */
@@ -199,3 +198,56 @@ tr:last-child td { border-bottom: 0; }
 }
 .escalares td { white-space: normal; }
 .escalares td:last-child { white-space: nowrap; }
+
+/* ================= diseño simplificado ================= */
+.tabla-simple { font-size: 15px; }
+.tabla-simple th, .tabla-simple td { padding: 12px 10px; text-align: left; white-space: nowrap; vertical-align: top; }
+.tabla-simple thead th { font-size: 12px; }
+.tabla-simple tbody th { font-size: 14.5px; font-weight: 650; color: var(--texto); text-transform: none; letter-spacing: 0; }
+.tabla-simple tbody th small, .tabla-simple td small { display: block; font-size: 12px; font-weight: 400; color: var(--texto-3); font-family: system-ui, sans-serif; margin-top: 2px; }
+.tabla-simple td { font-family: system-ui, sans-serif; }
+.tabla-simple td b { font-family: var(--mono); font-size: 16.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.tabla-simple .simb { color: var(--texto-2); font-weight: 600; }
+.tabla-simple .u { font-size: 12.5px; }
+.tabla-simple tbody tr:first-child { background: var(--superficie-2); }
+.marca-e { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: 1px; }
+.marca-e.e2 { background: var(--e2); } .marca-e.e3 { background: var(--e3); } .marca-e.e4 { background: var(--e4); }
+.aviso { margin: 12px 0 0; padding: 9px 12px; border-radius: 10px; background: var(--err-suave); color: var(--err); font-size: 13.5px; }
+
+.selector { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--texto-2); }
+.selector select { padding: 6px 10px; }
+
+.avanzado h4 { font-size: 13px; margin: 14px 0 4px; color: var(--texto); }
+.avanzado summary .nota, details.detalles summary .nota { text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+details.detalles { padding: 0; }
+details.detalles > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  padding: 16px 18px; text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--texto);
+}
+details.detalles > summary::-webkit-details-marker { display: none; }
+details.detalles > summary .t { font-weight: 650; }
+details.detalles > summary .t::before { content: "▸"; display: inline-block; margin-right: 8px; color: var(--primario); transition: transform .15s; }
+details.detalles[open] > summary .t::before { transform: rotate(90deg); }
+details.detalles[open] > summary { border-bottom: 1px solid var(--borde); margin-bottom: 0; }
+.detalles-cuerpo { padding: 4px 18px 18px; }
+.detalles-cuerpo section { margin-top: 18px; }
+.detalles-cuerpo h3 { font-size: 14px; margin: 0 0 8px; }
+.detalles-cuerpo td .ang { color: var(--texto-2); }
+.detalles-cuerpo td small { color: var(--texto-3); font-family: system-ui, sans-serif; }
+.detalles-cuerpo .nota { display: block; margin-top: 6px; font-size: 12.5px; }
+.sub-titulo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.sub-titulo h3 { margin: 0; }
+details.mini { border: 0; padding: 8px 0 0; }
+details.mini summary { text-transform: none; letter-spacing: 0; font-weight: 550; font-size: 13px; }
+
+/* en el celular la tabla simple se vuelve tarjetas por eslabón */
+@media (max-width: 640px) {
+  .tabla-simple thead { display: none; }
+  .tabla-simple, .tabla-simple tbody, .tabla-simple tr { display: block; width: 100%; }
+  .tabla-simple tr { border: 1px solid var(--borde); border-radius: 12px; margin-bottom: 10px; padding: 4px 0; }
+  .tabla-simple tbody th { display: block; border: 0; padding: 8px 12px 4px; }
+  .tabla-simple td { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; border: 0; padding: 4px 12px; white-space: normal; }
+  .tabla-simple td::before { content: attr(data-etq); width: 92px; flex: none; font-size: 12.5px; color: var(--texto-3); }
+  .tabla-simple td small { display: inline; margin: 0 0 0 4px; }
+}

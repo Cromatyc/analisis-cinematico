@@ -8,41 +8,48 @@
   // ------------------------------------------------------------------
   // definición de campos por mecanismo
   // ------------------------------------------------------------------
+  // solo longitudes y datos de entrada: sin centros de gravedad, puntos P ni masas
+  function simple(e) {
+    const r = {};
+    ["a", "b", "c", "d", "th2", "w2", "al2"].forEach((k) => { if (e[k] !== undefined) r[k] = e[k]; });
+    return r;
+  }
+
   const CAMPOS = {
     cuatroBarras: {
-      eslabones: [["a", "a", "eslabón 2 · manivela"], ["b", "b", "eslabón 3 · acoplador"], ["c", "c", "eslabón 4 · balancín"], ["d", "d", "eslabón 1 · bancada"]],
+      eslabones: [["a", "Manivela", "a"], ["b", "Acoplador", "b"], ["c", "Balancín", "c"], ["d", "Bancada", "d"]],
       cg: [["Rg2", "R<sub>g2</sub>"], ["d2", "δ<sub>2</sub> °"], ["Rg3", "R<sub>g3</sub>"], ["d3", "δ<sub>3</sub> °"], ["Rg4", "R<sub>g4</sub>"], ["d4", "δ<sub>4</sub> °"]],
       p: [["Rp3", "R<sub>P3</sub>"], ["dp3", "δ<sub>RP3</sub> °"], ["Rp4", "R<sub>P4</sub>"], ["dp4", "δ<sub>RP4</sub> °"]],
       din: [["m2", "m<sub>2</sub>"], ["I2", "I<sub>G2</sub>"], ["m3", "m<sub>3</sub>"], ["I3", "I<sub>G3</sub>"], ["m4", "m<sub>4</sub>"], ["I4", "I<sub>G4</sub>"],
         ["Fp3", "F<sub>P3</sub>", "magnitud"], ["dFp3", "δ<sub>FP3</sub> °", "resp. a X"], ["Fp4", "F<sub>P4</sub>", "magnitud"], ["dFp4", "δ<sub>FP4</sub> °", "resp. a X"],
         ["T3", "T<sub>3</sub>", "par externo"], ["T4", "T<sub>4</sub>", "par externo"]],
-      ayudaDin: "Masas, momentos de inercia respecto al CG, fuerzas externas en P3 y P4 (ángulo respecto al eje X global) y pares externos T3, T4 (+ antihorario). Use unidades consistentes: blob-pulg-lb o kg-m-N.",
-      defecto: DN.cuatroBarras[1].entrada,
+      ayudaDin: "Masas, inercias (respecto al CG), fuerzas externas en P3 y P4 (ángulo desde el eje X) y pares externos. Unidades consistentes: blob-pulg-lb o kg-m-N.",
+      defecto: simple(DN.cuatroBarras[1].entrada),
     },
     manivelaCorredera: {
-      eslabones: [["a", "a", "eslabón 2 · manivela"], ["b", "b", "eslabón 3 · biela"], ["c", "c", "descentrado"]],
+      eslabones: [["a", "Manivela", "a"], ["b", "Biela", "b"], ["c", "Descentrado", "c"]],
       cg: [["Rg2", "R<sub>g2</sub>"], ["d2", "δ<sub>2</sub> °"], ["Rg3", "R<sub>g3</sub>"], ["d3", "δ<sub>3</sub> °"]],
       p: [["Rp3", "R<sub>P3</sub>"], ["dp3", "δ<sub>RP3</sub> °"]],
       din: [["m2", "m<sub>2</sub>"], ["I2", "I<sub>G2</sub>"], ["m3", "m<sub>3</sub>"], ["I3", "I<sub>G3</sub>"], ["m4", "m<sub>4</sub>", "corredera"], ["mu", "μ", "fricción guía"],
         ["Fp3", "F<sub>P3</sub>", "magnitud"], ["dFp3", "δ<sub>FP3</sub> °", "resp. a AB"], ["Fp4", "F<sub>4</sub>", "sobre corredera"], ["dFp4", "δ<sub>F4</sub> °", "resp. a X"],
         ["T3", "T<sub>3</sub>", "par externo"]],
-      ayudaDin: "Masas, momentos de inercia respecto al CG, fuerza externa en P3 (ángulo respecto a la línea AB, figura P11-1), fuerza externa sobre la corredera (ángulo respecto a X), par externo T3 (+ antihorario) y fricción μ entre corredera y guía. Use unidades consistentes: blob-pulg-lb o kg-m-N.",
-      defecto: DN.corredera[1].entrada,
+      ayudaDin: "Masas, inercias (respecto al CG), fuerza en P3 (ángulo desde la línea AB), fuerza sobre la corredera (ángulo desde X), par externo T3 y fricción μ de la guía. Unidades consistentes: blob-pulg-lb o kg-m-N.",
+      defecto: simple(DN.corredera[1].entrada),
     },
   };
 
   const EJEMPLOS = {
     cuatroBarras: [
-      ...DN.cuatroBarras.map((r) => ({ nombre: `Norton Tabla P11-3 · fila ${r.fila}`, datos: r.entrada })),
-      { nombre: "Ejemplo de clase (a=2, b=7, c=9, d=6)", datos: { a: 2, b: 7, c: 9, d: 6, th2: 30, w2: 10, al2: 0, Rg2: 0, d2: 0, Rg3: 0, d3: 0, Rg4: 0, d4: 0, Rp3: 0, dp3: 0, Rp4: 0, dp4: 0 } },
+      { nombre: "Ejemplo de clase (a=2, b=7, c=9, d=6)", datos: { a: 2, b: 7, c: 9, d: 6, th2: 30, w2: 10, al2: 0 } },
+      ...DN.cuatroBarras.map((r) => ({ nombre: `Norton P11-3 fila ${r.fila} (completo)`, datos: r.entrada })),
     ],
-    manivelaCorredera: DN.corredera.map((r) => ({ nombre: `Norton Tabla P11-1 · fila ${r.fila}`, datos: r.entrada })),
+    manivelaCorredera: DN.corredera.map((r) => ({ nombre: `Norton P11-1 fila ${r.fila} (completo)`, datos: r.entrada })),
   };
 
   // ------------------------------------------------------------------
   // estado
   // ------------------------------------------------------------------
-  const guardado = leerLS("ac-estado") || {};
+  const guardado = leerLS("ac-estado-v2") || {};
   const estado = {
     modo: "cuatroBarras",
     valores: {
@@ -70,7 +77,7 @@
   // ------------------------------------------------------------------
   function campoHTML(id, etiqueta, sub) {
     return `<div class="campo"><label for="f-${id}">${etiqueta}${sub ? ` <small>${sub}</small>` : ""}</label>
-      <input type="number" step="any" id="f-${id}" data-k="${id}" /></div>`;
+      <input type="number" step="any" id="f-${id}" data-k="${id}" placeholder="0" /></div>`;
   }
 
   function construirFormulario() {
@@ -86,16 +93,16 @@
     $$("#form input[data-k]").forEach((inp) => inp.addEventListener("input", alEditar));
 
     const mags = estado.modo === "cuatroBarras"
-      ? [["th3", "θ3 (°)"], ["th4", "θ4 (°)"], ["w3", "ω3 (rad/s)"], ["w4", "ω4 (rad/s)"], ["al3", "α3 (rad/s²)"], ["al4", "α4 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"], ["AP3", "|a_P3|"], ...FUERZAS_GRAF]
-      : [["d", "Posición corredera d"], ["dd", "Velocidad corredera ḋ"], ["ddd", "Aceleración corredera d̈"], ["th3", "θ3 (°)"], ["w3", "ω3 (rad/s)"], ["al3", "α3 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"], ...FUERZAS_GRAF];
+      ? [["th3", "Posición θ3"], ["th4", "Posición θ4"], ["w3", "Velocidad ω3"], ["w4", "Velocidad ω4"], ["al3", "Aceleración α3"], ["al4", "Aceleración α4"], ["mu", "Ángulo de transmisión"], ...FUERZAS_GRAF]
+      : [["d", "Posición de la corredera d"], ["dd", "Velocidad de la corredera ḋ"], ["ddd", "Aceleración de la corredera d̈"], ["th3", "Posición θ3"], ["w3", "Velocidad ω3"], ["al3", "Aceleración α3"], ["mu", "Ángulo de transmisión"], ...FUERZAS_GRAF];
     $("#magnitud").innerHTML = mags.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
   }
 
-  const FUERZAS_GRAF = [["T12", "Par motor T12"], ["F12", "|F12| (pasador O2)"], ["F32", "|F32| (pasador A)"], ["F43", "|F43| (pasador B)"], ["F14", "|F14| (O4 o guía)"], ["Fs", "|Fuerza de sacudimiento|"], ["pot", "Potencia del motor T12·ω2"]];
+  const FUERZAS_GRAF = [["T12", "Par motor T12 (requiere fuerzas)"], ["F12", "Fuerza en O2 (requiere fuerzas)"], ["F43", "Fuerza en B (requiere fuerzas)"]];
 
   function volcarValores() {
     const v = estado.valores[estado.modo];
-    $$("#form input[data-k]").forEach((inp) => { inp.value = v[inp.dataset.k] ?? 0; });
+    $$("#form input[data-k]").forEach((inp) => { inp.value = v[inp.dataset.k] ?? ""; });
     $("#th2").value = v.th2;
     $("#th2-rango").value = K.norm360(v.th2);
     $("#w2").value = v.w2;
@@ -105,10 +112,11 @@
 
   function alEditar(e) {
     const inp = e.target;
-    const val = parseFloat(inp.value);
+    const val = inp.value === "" && !["a", "b", "c", "d"].includes(inp.dataset.k) ? 0 : parseFloat(inp.value);
     inp.classList.toggle("invalido", !isFinite(val));
     if (!isFinite(val)) return;
-    estado.valores[estado.modo][inp.dataset.k] = val;
+    const val2 = inp.value === "" ? 0 : val;
+    estado.valores[estado.modo][inp.dataset.k] = val2;
     calcular();
   }
 
@@ -128,7 +136,7 @@
       return r;
     };
     const err = $("#error");
-    escribirLS("ac-estado", estado.valores);
+    escribirLS("ac-estado-v2", estado.valores);
     try {
       estado.resultado = fn(p);
       err.hidden = true;
@@ -147,10 +155,10 @@
   }
 
   function pintarTodo() {
-    pintarResumen();
-    pintarResultados();
+    pintarSimple();
+    pintarDetalles();
     dibujarMecanismo();
-    dibujarGrafica();
+    if ($("#detalles").open) dibujarGrafica();
   }
 
   // ------------------------------------------------------------------
@@ -160,26 +168,41 @@
     return `<div class="tarjeta ${clase}"><div class="t">${titulo}</div><div class="v">${valor}</div><div class="s">${sub || ""}</div></div>`;
   }
 
-  function pintarResumen() {
-    const r = estado.resultado, el = $("#resumen");
-    if (!r) { el.innerHTML = ""; return; }
-    const F = r.fuerzas;
-    const tDin = F ? tarjeta("e2", "Par motor T12", fmt(F.T12, 3), `potencia T12·ω2 = ${fmt(F.potencia, 2)}`) : "";
-    if (r.tipo === "cuatroBarras") {
-      el.innerHTML =
-        tarjeta("e3", "θ3 · acoplador", fmt(r.angulos.th3, 3) + "°", `ω3 = ${fmt(r.w.w3, 3)} · α3 = ${fmt(r.al.al3, 2)}`) +
-        tarjeta("e4", "θ4 · balancín", fmt(r.angulos.th4, 3) + "°", `ω4 = ${fmt(r.w.w4, 3)} · α4 = ${fmt(r.al.al4, 2)}`) +
-        tarjeta("", "Ángulo de transmisión", fmt(r.extra.transmision, 2) + "°", r.extra.transmision < 40 ? "⚠ menor a 40°" : "aceptable (≥ 40°)") +
-        tarjeta("", "Condición de Grashof", r.extra.grashof.clase === "I" ? "Clase I" : r.extra.grashof.clase === "II" ? "Clase II" : "Clase III", r.extra.grashof.tipo) + tDin;
-    } else {
-      const ca = r.extra.carrera;
-      el.innerHTML =
-        tarjeta("e3", "θ3 · biela", fmt(r.angulos.th3, 3) + "°", `ω3 = ${fmt(r.w.w3, 3)} · α3 = ${fmt(r.al.al3, 2)}`) +
-        tarjeta("e4", "Corredera d", fmt(r.corredera.d, 4), `ḋ = ${fmt(r.corredera.dd, 3)}`) +
-        tarjeta("e4", "Aceleración d̈", fmt(r.corredera.ddd, 3), "de la corredera") +
-        tarjeta("", "Carrera", ca ? fmt(ca.carrera, 4) : "—", ca ? `d entre ${fmt(ca.dmin, 3)} y ${fmt(ca.dmax, 3)}` : "la manivela no da vuelta completa") +
-        tarjeta("", "Ángulo de transmisión", fmt(r.extra.transmision, 2) + "°", r.extra.transmision < 40 ? "⚠ menor a 40°" : "aceptable (≥ 40°)") + tDin;
-    }
+  // ------------------------------------------------------------------
+  // resultados simples: una fila por eslabón
+  // ------------------------------------------------------------------
+  const giro = (w) => (Math.abs(w) < 1e-9 ? "" : w > 0 ? "↺ antihorario" : "↻ horario");
+  const haciaX = (v) => (Math.abs(v) < 1e-9 ? "" : v > 0 ? "→ hacia la derecha" : "← hacia la izquierda");
+  const celda = (etq, simb, valor, unidad, nota) =>
+    `<td data-etq="${etq}"><span class="simb">${simb}</span> <b>${valor}</b> <span class="u">${unidad}</span>${nota ? `<small>${nota}</small>` : ""}</td>`;
+
+  function pintarSimple() {
+    const r = estado.resultado, el = $("#simple"), aviso = $("#aviso");
+    if (!r) { el.innerHTML = `<p class="ayuda">Revise los datos: el mecanismo no se puede armar así.</p>`; aviso.hidden = true; return; }
+    const cb = r.tipo === "cuatroBarras";
+    const fila = (cls, nombre, sub, pos, vel, acc) =>
+      `<tr><th scope="row"><span class="marca-e ${cls}"></span>${nombre}<small>${sub}</small></th>${pos}${vel}${acc}</tr>`;
+    let filas =
+      fila("e2", "Manivela", "eslabón 2 · dato",
+        celda("Posición", "θ2", fmt(r.angulos.th2, 2), "°"),
+        celda("Velocidad", "ω2", fmt(r.w.w2, 3), "rad/s", giro(r.w.w2)),
+        celda("Aceleración", "α2", fmt(r.al.al2, 3), "rad/s²")) +
+      fila("e3", cb ? "Acoplador" : "Biela", "eslabón 3",
+        celda("Posición", "θ3", fmt(r.angulos.th3, 2), "°"),
+        celda("Velocidad", "ω3", fmt(r.w.w3, 3), "rad/s", giro(r.w.w3)),
+        celda("Aceleración", "α3", fmt(r.al.al3, 3), "rad/s²"));
+    filas += cb
+      ? fila("e4", "Balancín", "eslabón 4",
+        celda("Posición", "θ4", fmt(r.angulos.th4, 2), "°"),
+        celda("Velocidad", "ω4", fmt(r.w.w4, 3), "rad/s", giro(r.w.w4)),
+        celda("Aceleración", "α4", fmt(r.al.al4, 3), "rad/s²"))
+      : fila("e4", "Corredera", "eslabón 4",
+        celda("Posición", "d", fmt(r.corredera.d, 3), ""),
+        celda("Velocidad", "ḋ", fmt(r.corredera.dd, 3), "/s", haciaX(r.corredera.dd)),
+        celda("Aceleración", "d̈", fmt(r.corredera.ddd, 3), "/s²"));
+    el.innerHTML = `<table class="tabla-simple"><thead><tr><th>Eslabón</th><th>Posición</th><th>Velocidad</th><th>Aceleración</th></tr></thead><tbody>${filas}</tbody></table>`;
+
+    aviso.hidden = true; // el ángulo de transmisión se muestra en "Más detalles"
   }
 
   // ------------------------------------------------------------------
@@ -190,94 +213,66 @@
     G4: "G4 <small>(CG 4)</small>", P3: "P3", P4: "P4", O2: "O2", O4: "O4",
   };
 
-  function tablaVectores(obj, claves, pre) {
-    const filas = claves.filter((k) => obj[k]).map((k) => {
-      const v = obj[k];
-      return `<tr><td>${pre}<sub>${NOMBRES[k]}</sub></td><td>${fmt(v.x, 3)}</td><td>${fmt(v.y, 3)}</td><td>${fmt(v.mag, 3)}</td><td>${fmt(v.ang, 2)}°</td></tr>`;
-    }).join("");
-    return `<div class="tabla-scroll"><table><thead><tr><th></th><th>x</th><th>y</th><th>magnitud</th><th>ángulo</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+  const polarTxt = (v) => (v ? `${fmt(v.mag, 3)} <span class="ang">∠ ${fmt(v.ang, 1)}°</span>` : "—");
+  function tablaPuntos(r) {
+    const e = r.entrada, cb = r.tipo === "cuatroBarras";
+    const filas = [["A", "A <small>unión manivela–" + (cb ? "acoplador" : "biela") + "</small>"], ["B", "B <small>" + (cb ? "unión acoplador–balancín" : "corredera") + "</small>"], ["BA", "B respecto a A"]];
+    if (+e.Rg2) filas.push(["G2", "G2 <small>centro de gravedad 2</small>"]);
+    if (+e.Rg3) filas.push(["G3", "G3 <small>centro de gravedad 3</small>"]);
+    if (cb && +e.Rg4) filas.push(["G4", "G4 <small>centro de gravedad 4</small>"]);
+    if (+e.Rp3) filas.push(["P3", "P3 <small>punto del eslabón 3</small>"]);
+    if (cb && +e.Rp4) filas.push(["P4", "P4 <small>punto del eslabón 4</small>"]);
+    const tr = filas.map(([k, n]) => `<tr><td>${n}</td><td>${k === "BA" ? "—" : polarTxt(r.puntos[k])}</td><td>${polarTxt(r.V[k])}</td><td>${polarTxt(r.Ac[k])}</td></tr>`).join("");
+    return `<div class="tabla-scroll"><table><thead><tr><th>Punto</th><th>Posición R</th><th>Velocidad V</th><th>Aceleración a</th></tr></thead><tbody>${tr}</tbody></table></div>
+      <p class="nota">Magnitud ∠ ángulo medido desde el eje X. La posición se mide desde O2.</p>`;
   }
 
-  function tablaEscalares(filas) {
-    return `<div class="tabla-scroll"><table class="escalares"><tbody>${filas.map(([n, v, u]) => `<tr><td>${n}</td><td>${v} <small>${u || ""}</small></td></tr>`).join("")}</tbody></table></div>`;
+  function filasDato(filas) {
+    return `<div class="tabla-scroll"><table class="escalares"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join("")}</tbody></table></div>`;
   }
 
-  const NOMBRES_F = {
-    F12: "F<sub>12</sub> <small>bancada → 2 (O2)</small>", F32: "F<sub>32</sub> <small>3 → 2 (A)</small>", F43: "F<sub>43</sub> <small>4 → 3 (B)</small>",
-    F14: "F<sub>14</sub> <small>bancada → 4</small>", F21: "F<sub>21</sub> <small>2 → bancada</small>", F41: "F<sub>41</sub> <small>4 → bancada</small>",
-    Fs: "F<sub>s</sub> <small>sacudimiento</small>",
-    G2: "−m<sub>2</sub>a<sub>G2</sub>", G3: "−m<sub>3</sub>a<sub>G3</sub>", G4: "−m<sub>4</sub>a<sub>G4</sub>",
-  };
-  function tablaFuerzas(dic, claves) {
-    const filas = claves.filter((k) => dic[k]).map((k) => {
-      const v = dic[k];
-      return `<tr><td>${NOMBRES_F[k]}</td><td>${fmt(v.x, 3)}</td><td>${fmt(v.y, 3)}</td><td>${fmt(v.mag, 3)}</td><td>${fmt(v.ang, 2)}°</td></tr>`;
-    }).join("");
-    return `<div class="tabla-scroll"><table><thead><tr><th></th><th>x</th><th>y</th><th>magnitud</th><th>ángulo</th></tr></thead><tbody>${filas}</tbody></table></div>`;
-  }
-
-  function grupoFuerzas(r) {
-    if (r.errorFuerzas) return `<div class="grupo ancho-total" style="--c:var(--mal)"><h3>Fuerzas dinámicas</h3><p class="ayuda">${r.errorFuerzas}</p></div>`;
-    const F = r.fuerzas;
-    if (!F) return `<div class="grupo ancho-total" style="--c:var(--texto-3)"><h3>Fuerzas dinámicas</h3><p class="ayuda">Ingrese masas, inercias o cargas en la sección <b>Dinámica</b> para calcular las fuerzas en los pasadores y el par motor.</p></div>`;
+  function pintarDetalles() {
+    const r = estado.resultado;
+    if (!r) { ["#det-puntos", "#det-datos", "#det-fuerzas"].forEach((s) => ($(s).innerHTML = "")); return; }
     const cb = r.tipo === "cuatroBarras";
-    const comp = F.errorPotencia < 1e-6;
-    const esc = [
-      ["T12 <small>par motor sobre el eslabón 2</small>", fmt(F.T12, 4)],
-      ["T<sub>s</sub> = T21 <small>par de sacudimiento</small>", fmt(F.Ts, 4)],
-      ["Potencia T12·ω2", fmt(F.potencia, 3)],
-    ];
-    if (!cb) esc.push(["Fricción en la guía F14x", fmt(F.friccion, 4)], ["Normal de la guía F14y", fmt(F.F14.y, 4)]);
-    esc.push(["Comprobación por potencia", `<span class="et ${comp ? "ok" : "falla"}">${comp ? "cumple" : "no cumple"}</span> <small>motor + cargas ${fmt(F.potEntrada, 3)} = inercia ${fmt(F.potInercia, 3)}</small>`]);
-    const ine = [["−I<sub>G2</sub>α<sub>2</sub>", fmt(F.inercia.T2, 4)], ["−I<sub>G3</sub>α<sub>3</sub>", fmt(F.inercia.T3, 4)]];
-    if (cb) ine.push(["−I<sub>G4</sub>α<sub>4</sub>", fmt(F.inercia.T4, 4)]);
-    return `<div class="grupo ancho-total" style="--c:var(--fuerza)"><h3>Fuerzas dinámicas (Newton-Euler, Norton cap. 11)</h3>
-      <div class="sub-rejilla">
-        <div>${tablaEscalares(esc)}<h4>Fuerzas en los pasadores</h4>${tablaFuerzas(F, ["F12", "F32", "F43", "F14"])}</div>
-        <div><h4>Fuerzas sobre la bancada</h4>${tablaFuerzas(F, ["F21", "F41", "Fs"])}
-          <h4>Fuerzas y pares de inercia (d’Alembert)</h4>${tablaFuerzas(F.inercia, ["G2", "G3", "G4"])}${tablaEscalares(ine)}</div>
-      </div></div>`;
-  }
+    $("#det-puntos").innerHTML = tablaPuntos(r);
 
-  function pintarResultados() {
-    const r = estado.resultado, el = $("#resultados");
-    if (!r) { el.innerHTML = `<p class="ayuda">Corrija los datos para ver resultados.</p>`; return; }
-    const cb = r.tipo === "cuatroBarras";
-    const ptsPos = cb ? ["A", "B", "G2", "G3", "G4", "P3", "P4"] : ["A", "B", "G2", "G3", "P3"];
-    const ptsV = cb ? ["A", "B", "BA", "G2", "G3", "G4", "P3", "P4"] : ["A", "B", "BA", "G2", "G3", "G4", "P3"];
-
-    const posEsc = cb
-      ? [["θ2", fmt(r.angulos.th2, 4) + "°"], ["θ3", fmt(r.angulos.th3, 4) + "°"], ["θ4", fmt(r.angulos.th4, 4) + "°"]]
-      : [["θ2", fmt(r.angulos.th2, 4) + "°"], ["θ3", fmt(r.angulos.th3, 4) + "°"], ["d (corredera)", fmt(r.corredera.d, 4)]];
-    const velEsc = cb
-      ? [["ω2", fmt(r.w.w2, 4), "rad/s"], ["ω3", fmt(r.w.w3, 4), "rad/s"], ["ω4", fmt(r.w.w4, 4), "rad/s"], ["ω4 / ω2", fmt(r.extra.relVel, 4)]]
-      : [["ω2", fmt(r.w.w2, 4), "rad/s"], ["ω3", fmt(r.w.w3, 4), "rad/s"], ["ḋ (corredera)", fmt(r.corredera.dd, 4), "long/s"]];
-    const accEsc = cb
-      ? [["α2", fmt(r.al.al2, 4), "rad/s²"], ["α3", fmt(r.al.al3, 4), "rad/s²"], ["α4", fmt(r.al.al4, 4), "rad/s²"]]
-      : [["α2", fmt(r.al.al2, 4), "rad/s²"], ["α3", fmt(r.al.al3, 4), "rad/s²"], ["d̈ (corredera)", fmt(r.corredera.ddd, 4), "long/s²"]];
-
-    let otros;
+    const mu = r.extra.transmision;
+    const datos = [["Ángulo de transmisión", `${fmt(mu, 2)}° <small>${mu < 40 ? "bajo (se recomienda ≥ 40°)" : "adecuado"}</small>`]];
     if (cb) {
-      const k = r.extra.K, c = r.extra.coef;
-      otros = tablaEscalares([
-        ["Grashof", r.extra.grashof.tipo], ["Ángulo de transmisión μ", fmt(r.extra.transmision, 3) + "°"],
-        ["K1 · K2 · K3", `${fmt(k.K1, 4)} · ${fmt(k.K2, 4)} · ${fmt(k.K3, 4)}`], ["K4 · K5", `${fmt(k.K4, 4)} · ${fmt(k.K5, 4)}`],
-        ["A · B · C", `${fmt(c.A, 4)} · ${fmt(c.B, 4)} · ${fmt(c.C, 4)}`], ["D · E · F", `${fmt(c.D, 4)} · ${fmt(c.E, 4)} · ${fmt(c.F, 4)}`],
-      ]);
+      datos.unshift(["Tipo (Grashof)", r.extra.grashof.tipo]);
+      datos.push(["Relación de velocidades ω4/ω2", fmt(r.extra.relVel, 4)]);
     } else {
       const ca = r.extra.carrera;
-      otros = tablaEscalares([
-        ["Ángulo de transmisión μ", fmt(r.extra.transmision, 3) + "°"],
-        ["Carrera", ca ? fmt(ca.carrera, 4) : "—"], ["d mínima · máxima", ca ? `${fmt(ca.dmin, 4)} · ${fmt(ca.dmax, 4)}` : "—"],
-      ]);
+      datos.push(["Carrera de la corredera", ca ? `${fmt(ca.carrera, 3)} <small>(d entre ${fmt(ca.dmin, 3)} y ${fmt(ca.dmax, 3)})</small>` : "—"]);
     }
+    let constantes = "";
+    if (cb) {
+      const k = r.extra.K, c = r.extra.coef;
+      constantes = `<details class="mini"><summary>Constantes de las ecuaciones (K1–K5, A–F)</summary>${filasDato([
+        ["K1 · K2 · K3", `${fmt(k.K1, 4)} · ${fmt(k.K2, 4)} · ${fmt(k.K3, 4)}`], ["K4 · K5", `${fmt(k.K4, 4)} · ${fmt(k.K5, 4)}`],
+        ["A · B · C", `${fmt(c.A, 4)} · ${fmt(c.B, 4)} · ${fmt(c.C, 4)}`], ["D · E · F", `${fmt(c.D, 4)} · ${fmt(c.E, 4)} · ${fmt(c.F, 4)}`]])}</details>`;
+    }
+    $("#det-datos").innerHTML = filasDato(datos) + constantes;
 
-    el.innerHTML = `
-      <div class="grupo" style="--c:var(--e2)"><h3>Posición</h3>${tablaEscalares(posEsc)}${tablaVectores(r.puntos, ptsPos, "R")}</div>
-      <div class="grupo" style="--c:var(--vel)"><h3>Velocidad</h3>${tablaEscalares(velEsc)}${tablaVectores(r.V, ptsV, "V")}</div>
-      <div class="grupo" style="--c:var(--acc)"><h3>Aceleración</h3>${tablaEscalares(accEsc)}${tablaVectores(r.Ac, ptsV, "a")}</div>
-      <div class="grupo" style="--c:var(--e4)"><h3>Otros datos</h3>${otros}</div>
-      ${grupoFuerzas(r)}`;
+    const F = r.fuerzas;
+    if (r.errorFuerzas) { $("#det-fuerzas").innerHTML = `<p class="ayuda">${r.errorFuerzas}</p>`; return; }
+    if (!F) {
+      $("#det-fuerzas").innerHTML = `<p class="ayuda">Para calcular las fuerzas y el par motor, ingrese masas o cargas en <b>Opciones avanzadas → Fuerzas</b>, o cargue un ejemplo “completo” del libro.</p>`;
+      return;
+    }
+    const filasF = [
+      ["Par motor T12 <small>el que debe dar el motor</small>", fmt(F.T12, 3)],
+      ["F12 <small>en el pivote O2</small>", polarTxt(F.F12)],
+      ["F32 <small>en el pasador A</small>", polarTxt(F.F32)],
+      ["F43 <small>en el pasador B</small>", polarTxt(F.F43)],
+      [cb ? "F14 <small>en el pivote O4</small>" : "F14 <small>de la guía sobre la corredera</small>", polarTxt(F.F14)],
+      ["Fuerza de sacudimiento <small>sobre la bancada</small>", polarTxt(F.Fs)],
+      ["Potencia del motor T12·ω2", fmt(F.potencia, 3)],
+    ];
+    const comp = F.errorPotencia < 1e-6;
+    $("#det-fuerzas").innerHTML = filasDato(filasF) +
+      `<p class="nota">F<sub>ij</sub> = fuerza del eslabón i sobre el j. Comprobación por balance de potencia: <span class="et ${comp ? "ok" : "falla"}">${comp ? "cumple" : "no cumple"}</span></p>`;
   }
 
   // ------------------------------------------------------------------
@@ -314,7 +309,8 @@
     if (!r) return;
     const cb = r.tipo === "cuatroBarras";
     const P = r.puntos;
-    const verTray = $("#ver-tray").checked;
+    const verTray = true;
+    const flechas = $("#flechas").value;
 
     // caja que contiene todo (vuelta completa) para que la escala no salte al animar
     const pts = [P.O2, P.A, P.B, P.G3, P.P3];
@@ -347,10 +343,9 @@
         });
         ctx.stroke(); ctx.setLineDash([]);
       };
-      tray((q) => q.puntos.A, c.e2 + "88");
-      if (P.P3.x !== P.G3.x || P.P3.y !== P.G3.y) tray((q) => q.puntos.P3, c.e3 + "aa");
-      tray((q) => q.puntos.G3, c.e3 + "66");
-      if (cb) tray((q) => q.puntos.B, c.e4 + "88");
+      tray((q) => q.puntos.A, c.e2 + "66");
+      if (+r.entrada.Rp3) tray((q) => q.puntos.P3, c.e3 + "88");
+      if (cb) tray((q) => q.puntos.B, c.e4 + "66");
     }
 
     // bancada / guía
@@ -441,10 +436,14 @@
       });
     };
     const claves = cb ? ["A", "B", "G3", "P3"] : ["A", "B", "G3", "P3"];
-    if ($("#ver-vel").checked) vectores(r.V, c.v, claves);
-    if ($("#ver-acc").checked) vectores(r.Ac, c.a, claves);
+    if (flechas === "v") vectores(r.V, c.v, claves);
+    if (flechas === "a") vectores(r.Ac, c.a, claves);
     const F = r.fuerzas;
-    if ($("#ver-fza").checked && F) {
+    if (flechas === "f" && !F) {
+      ctx.fillStyle = c.t3; ctx.font = "13px system-ui";
+      ctx.fillText("Sin datos de fuerzas: vea Opciones avanzadas → Fuerzas", 12, 22);
+    }
+    if (flechas === "f" && F) {
       const cf = cssVar("--fuerza");
       const lista = [[F.F12, P.O2, "F12"], [F.F32, P.A, "F32"], [F.F43, P.B, "F43"], [F.F14, cb ? P.O4 : P.B, "F14"]];
       const max = Math.max(...lista.map(([v]) => v.mag), 1e-9);
@@ -458,7 +457,8 @@
 
     // rótulo de configuración
     ctx.fillStyle = c.t3; ctx.font = "12px system-ui";
-    ctx.fillText(`θ2 = ${fmt(r.angulos.th2, 1)}° · configuración ${r.abierta ? "abierta" : "cruzada"}`, 12, h - 12);
+    const leyenda = { v: "Flechas: velocidad (tamaño relativo)", a: "Flechas: aceleración (tamaño relativo)", f: "Flechas: fuerzas en los pasadores (tamaño relativo)" }[flechas] || "";
+    ctx.fillText(`θ2 = ${fmt(r.angulos.th2, 1)}° · ${r.abierta ? "abierta" : "cruzada"}${leyenda ? " · " + leyenda : ""}`, 12, h - 12);
   }
 
   // ------------------------------------------------------------------
@@ -723,7 +723,8 @@
       volcarValores(); calcular();
       e.target.value = "";
     });
-    ["#ver-vel", "#ver-acc", "#ver-fza", "#ver-tray"].forEach((s) => $(s).addEventListener("change", dibujarMecanismo));
+    $("#flechas").addEventListener("change", dibujarMecanismo);
+    $("#detalles").addEventListener("toggle", () => { if ($("#detalles").open) dibujarGrafica(); });
     $("#magnitud").addEventListener("change", dibujarGrafica);
     const g = $("#grafica");
     g.addEventListener("mousemove", (e) => { hoverX = e.offsetX; dibujarGrafica(); });
@@ -740,13 +741,15 @@
     $("#copiar").addEventListener("click", async () => {
       try { await navigator.clipboard.writeText(textoResultados()); $("#copiar").textContent = "¡Copiado!"; }
       catch (e) { $("#copiar").textContent = "No se pudo copiar"; }
-      setTimeout(() => ($("#copiar").textContent = "Copiar"), 1500);
+      setTimeout(() => ($("#copiar").textContent = "Copiar resultados"), 1500);
     });
     $("#csv").addEventListener("click", descargarCSV);
     let rt = null;
     window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (!$("#vista-calculo").hidden) pintarTodo(); }, 100); });
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!$("#vista-calculo").hidden) pintarTodo(); });
 
+    // ?detalles en el enlace abre "Más detalles" desde el inicio
+    if (new URLSearchParams(location.search).has("detalles")) $("#detalles").open = true;
     window.addEventListener("hashchange", () => cambiarModo(modoDesdeHash()));
     cambiarModo(modoDesdeHash());
   }
