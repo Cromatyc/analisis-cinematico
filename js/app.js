@@ -199,7 +199,7 @@
   }
 
   function tablaEscalares(filas) {
-    return `<table><tbody>${filas.map(([n, v, u]) => `<tr><td>${n}</td><td>${v} <small>${u || ""}</small></td></tr>`).join("")}</tbody></table>`;
+    return `<div class="tabla-scroll"><table class="escalares"><tbody>${filas.map(([n, v, u]) => `<tr><td>${n}</td><td>${v} <small>${u || ""}</small></td></tr>`).join("")}</tbody></table></div>`;
   }
 
   const NOMBRES_F = {
@@ -652,7 +652,12 @@
   // ------------------------------------------------------------------
   // eventos
   // ------------------------------------------------------------------
+  // enlaces directos a cada pestaña: #balancin, #corredera, #verificacion
+  const HASH = { cuatroBarras: "balancin", manivelaCorredera: "corredera", verificacion: "verificacion" };
+  const modoDesdeHash = () => Object.keys(HASH).find((k) => "#" + HASH[k] === location.hash) || "cuatroBarras";
+
   function cambiarModo(modo) {
+    if (location.hash !== "#" + HASH[modo]) history.replaceState(null, "", "#" + HASH[modo]);
     $$(".pestanas button").forEach((b) => b.classList.toggle("activa", b.dataset.modo === modo));
     const verif = modo === "verificacion";
     $("#vista-calculo").hidden = verif;
@@ -742,7 +747,8 @@
     window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (!$("#vista-calculo").hidden) pintarTodo(); }, 100); });
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!$("#vista-calculo").hidden) pintarTodo(); });
 
-    cambiarModo("cuatroBarras");
+    window.addEventListener("hashchange", () => cambiarModo(modoDesdeHash()));
+    cambiarModo(modoDesdeHash());
   }
 
   iniciar();

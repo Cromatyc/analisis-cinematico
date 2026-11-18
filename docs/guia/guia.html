@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Guía de uso — Análisis cinemático de mecanismos</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 17mm 18mm 17mm;
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 9pt "Segoe UI", sans-serif; color: #64748b; }
+    @bottom-left { content: "Guía de uso · Análisis cinemático de mecanismos"; font: 9pt "Segoe UI", sans-serif; color: #64748b; }
+  }
+  @page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+  :root { --azul: #2563eb; --azul-s: #eff6ff; --rojo: #e11d48; --texto: #0f172a; --gris: #475569; --borde: #e2e8f0; --verde: #16a34a; --ambar: #b45309; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.5pt/1.5 "Segoe UI", system-ui, sans-serif; color: var(--texto); }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 6pt; letter-spacing: -.02em; }
+  h2 { font-size: 15pt; margin: 20pt 0 6pt; color: var(--azul); break-after: avoid; letter-spacing: -.01em; }
+  h2 .n { display: inline-block; width: 22pt; height: 22pt; border-radius: 50%; background: var(--azul); color: #fff; text-align: center; line-height: 22pt; font-size: 11pt; margin-right: 6pt; vertical-align: 2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 7pt; }
+  a { color: var(--azul); }
+  code, .m { font-family: "Cascadia Mono", Consolas, monospace; font-size: 9.5pt; }
+  .salto { break-before: page; }
+  figure { margin: 8pt 0 12pt; break-inside: avoid; }
+  figure img { width: 100%; display: block; border-radius: 6pt; }
+  figcaption { font-size: 9pt; color: var(--gris); margin-top: 4pt; }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.8pt; break-inside: avoid; }
+  th, td { border-bottom: 1px solid var(--borde); padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; font-size: 9pt; font-weight: 650; color: var(--gris); }
+  td.num, th.num { text-align: right; font-family: "Cascadia Mono", Consolas, monospace; }
+  .caja { border: 1px solid var(--borde); border-left: 4pt solid var(--azul); background: var(--azul-s); border-radius: 6pt; padding: 8pt 11pt; margin: 8pt 0 12pt; break-inside: avoid; }
+  .caja.alerta { border-left-color: var(--ambar); background: #fffbeb; }
+  .caja.ok { border-left-color: var(--verde); background: #f0fdf4; }
+  .caja b:first-child { display: block; margin-bottom: 2pt; }
+  .pasos { counter-reset: paso; list-style: none; padding: 0; margin: 4pt 0 10pt; }
+  .pasos li { counter-increment: paso; position: relative; padding: 0 0 7pt 30pt; break-inside: avoid; }
+  .pasos li::before { content: counter(paso); position: absolute; left: 0; top: 0; width: 20pt; height: 20pt; border-radius: 50%; background: var(--azul); color: #fff; font-weight: 700; text-align: center; line-height: 20pt; font-size: 10pt; }
+  .leyenda { columns: 2; column-gap: 18pt; padding: 0; list-style: none; margin: 0; break-inside: avoid; }
+  img.p { width: 92%; margin: 0 auto; }
+  .leyenda li { break-inside: avoid; margin-bottom: 5pt; padding-left: 24pt; position: relative; }
+  .leyenda li span { position: absolute; left: 0; top: 1pt; width: 17pt; height: 17pt; border-radius: 50%; background: var(--azul); color: #fff; font-weight: 700; font-size: 9pt; text-align: center; line-height: 17pt; }
+  .leyenda.roja li span { background: var(--rojo); }
+  .portada { border-bottom: 3pt solid var(--azul); padding-bottom: 12pt; margin-bottom: 14pt; }
+  .portada .sub { font-size: 12pt; color: var(--gris); }
+  .enlace { display: inline-block; margin-top: 8pt; background: var(--azul); color: #fff; padding: 5pt 11pt; border-radius: 6pt; text-decoration: none; font-weight: 600; }
+  .si { color: var(--verde); font-weight: 700; }
+  .no { color: #94a3b8; }
+  .formula { font-family: "Cambria Math", "Cambria", serif; font-size: 11pt; background: #f8fafc; border: 1px solid var(--borde); border-radius: 6pt; padding: 7pt 11pt; margin: 4pt 0 9pt; break-inside: avoid; line-height: 1.75; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14pt; }
+  .pequeno { font-size: 9pt; color: var(--gris); }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <h1>Guía de uso<br/>Análisis cinemático de mecanismos</h1>
+  <p class="sub">Cómo obtener la <b>posición</b>, la <b>velocidad</b> y la <b>aceleración</b> de todos los eslabones a partir de los datos del eslabón de entrada, en el mecanismo manivela-balancín (cuatro barras) y en el manivela-corredera.</p>
+  <a class="enlace" href="https://cromatyc.github.io/analisis-cinematico/">cromatyc.github.io/analisis-cinematico</a>
+</div>
+
+<div class="caja ok">
+  <b>En 30 segundos</b>
+  Elija el mecanismo arriba, escriba las longitudes y los datos del eslabón 2 (θ2, ω2, α2), y lea los resultados en las tarjetas de <b>Resultados principales</b>. No hay botón de “calcular”: <b>todo se recalcula solo mientras escribe</b>.
+</div>
+
+<h2><span class="n">1</span>La pantalla</h2>
+<figure>
+  <img class="p" src="fig1-pantalla.png" alt="Pantalla principal con sus partes numeradas" />
+  <figcaption>Figura 1. Pantalla principal (manivela-balancín, datos de la Tabla P11-3 fila b del Norton).</figcaption>
+</figure>
+<ul class="leyenda">
+  <li><span>1</span><b>Pestañas.</b> Manivela-balancín, Manivela-corredera o Verificación (comparación con el libro).</li>
+  <li><span>2</span><b>Cargar ejemplo.</b> Llena todo con una fila (a–g) de las tablas del Norton.</li>
+  <li><span>3</span><b>Eslabones.</b> Longitudes a, b, c, d (o a, b y descentrado c en la corredera).</li>
+  <li><span>4</span><b>Eslabón de entrada (2).</b> θ2 (ángulo, con barra deslizante), ω2 y α2.</li>
+  <li><span>5</span><b>Configuración.</b> Abierta o cruzada: son las dos formas de armar el mecanismo.</li>
+  <li><span>6</span><b>Resultados principales.</b> θ3, θ4, ω3, ω4, α3, α4 (o d, ḋ, d̈ en la corredera). <b>Aquí se ve el cambio al instante.</b></li>
+  <li><span>7</span><b>Dibujo.</b> El mecanismo en la posición calculada, con flechas de velocidad, aceleración o fuerza y la trayectoria de los puntos.</li>
+</ul>
+
+<h2><span class="n">2</span>Paso a paso: posición, velocidad y aceleración</h2>
+<ol class="pasos">
+  <li><b>Elija el mecanismo</b> en las pestañas (1): <i>Manivela-balancín</i> para cuatro barras o <i>Manivela-corredera</i>.</li>
+  <li><b>Escriba las longitudes</b> (3). En cuatro barras: <span class="m">a</span> = manivela (eslabón 2), <span class="m">b</span> = acoplador (3), <span class="m">c</span> = balancín (4), <span class="m">d</span> = bancada (1). Use la misma unidad en todas (pulgadas, mm, m…).</li>
+  <li><b>Escriba los datos del eslabón 2</b> (4): el ángulo <span class="m">θ2</span> en grados, la velocidad angular <span class="m">ω2</span> en rad/s y la aceleración angular <span class="m">α2</span> en rad/s². Positivo = antihorario.</li>
+  <li><b>Elija la configuración</b> (5). Casi siempre es <i>Abierta</i>; use <i>Cruzada</i> si su mecanismo está armado con el acoplador y el balancín cruzados.</li>
+  <li><b>Lea los resultados.</b> Arriba, en las tarjetas (6), están los valores principales. Más abajo, en la sección <b>Resultados</b>, está todo en detalle (Figuras 2 y 3).</li>
+</ol>
+<div class="caja">
+  <b>Las secciones plegables son opcionales</b>
+  <i>Centros de gravedad</i>, <i>Puntos P</i> y <i>Dinámica · fuerzas</i> solo hacen falta si necesita la velocidad o la aceleración de un centro de gravedad o de un punto del acoplador, o las fuerzas y el par motor. Para posición, velocidad y aceleración de los eslabones puede ignorarlas.
+</div>
+
+<h2 class="salto"><span class="n">3</span>Dónde leer cada resultado</h2>
+<p>Debajo del dibujo está la sección <b>Resultados</b>, organizada en <b>Posición (P)</b>, <b>Velocidad (V)</b> y <b>Aceleración (A)</b>. Cada bloque tiene primero los valores angulares de los eslabones y luego los vectores de los puntos, con sus componentes x, y, la magnitud y el ángulo.</p>
+<figure>
+  <img src="fig2-resultados.png" alt="Bloques de posición y velocidad" />
+  <figcaption>Figura 2. Bloques de posición (P) y velocidad (V).</figcaption>
+</figure>
+<ul class="leyenda roja">
+  <li><span>P</span><b>Posición:</b> θ2, θ3, θ4 y la posición de los puntos A, B, los centros de gravedad G y los puntos P, medida desde O2.</li>
+  <li><span>V</span><b>Velocidad:</b> ω2, ω3, ω4 y las velocidades de A, B, la relativa B/A, los G y los P.</li>
+</ul>
+
+<figure>
+  <img src="fig2b-aceleracion.png" alt="Bloque de aceleración" />
+  <figcaption>Figura 3. Bloque de aceleración (A): α2, α3, α4 y las aceleraciones de los puntos.</figcaption>
+</figure>
+
+<h2><span class="n">4</span>“Cambio un dato y lo demás no cambia”</h2>
+<p>Si le pasa esto, revise estos puntos en orden:</p>
+<ol class="pasos">
+  <li><b>Mire las tarjetas de “Resultados principales”</b>, arriba a la derecha. Ahí cambian los números en cuanto escribe. <span class="pequeno">(En una versión anterior el dibujo se hacía muy alto y empujaba los resultados fuera de la pantalla; ya está corregido.)</span></li>
+  <li><b>Recargue la página</b> con <span class="m">Ctrl + F5</span> (en el celular, cierre y vuelva a abrir la pestaña) para asegurarse de tener la última versión.</li>
+  <li><b>Revise si el campo quedó con borde rojo:</b> el número no es válido. Escriba solo números, con punto decimal (<span class="m">2.5</span>).</li>
+  <li><b>Lea el mensaje rojo</b> debajo de los datos, si aparece: el mecanismo no se puede armar con esas longitudes en ese ángulo.</li>
+  <li><b>Revise qué cambió.</b> No todo depende de todo; algunos resultados <i>deben</i> quedar iguales. Por ejemplo, ω2 no cambia los ángulos θ3 y θ4. La tabla siguiente lo resume.</li>
+</ol>
+
+<h3>¿Qué resultados cambian cuando cambio cada dato?</h3>
+<table>
+  <thead><tr><th>Si cambio…</th><th>Posición<br/>(θ3, θ4, puntos)</th><th>Velocidad<br/>(ω3, ω4, V)</th><th>Aceleración<br/>(α3, α4, a)</th><th>Fuerzas<br/>(T12, F)</th></tr></thead>
+  <tbody>
+    <tr><td>Longitudes a, b, c, d</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td></tr>
+    <tr><td>Ángulo θ2</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td></tr>
+    <tr><td>Abierta / cruzada</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td></tr>
+    <tr><td>Velocidad ω2</td><td class="no">no</td><td class="si">sí</td><td class="si">sí</td><td class="si">sí</td></tr>
+    <tr><td>Aceleración α2</td><td class="no">no</td><td class="no">no</td><td class="si">sí</td><td class="si">sí</td></tr>
+    <tr><td>Centros de gravedad (R<sub>g</sub>, δ)</td><td>solo G2, G3, G4</td><td>solo V<sub>G</sub></td><td>solo a<sub>G</sub></td><td class="si">sí</td></tr>
+    <tr><td>Puntos P (R<sub>P</sub>, δ<sub>RP</sub>)</td><td>solo P3, P4</td><td>solo V<sub>P</sub></td><td>solo a<sub>P</sub></td><td class="si">sí</td></tr>
+    <tr><td>Masas, inercias, cargas</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="si">sí</td></tr>
+  </tbody>
+</table>
+<div class="caja">
+  <b>¿Por qué ω2 no cambia la posición?</b>
+  La posición (θ3, θ4) es pura geometría: solo depende de las longitudes y de θ2. La velocidad depende además de ω2, y la aceleración depende de ω2 y de α2. Por eso, si duplica ω2, se duplican ω3 y ω4, pero θ3 y θ4 siguen iguales. Es lo esperado, no un error.
+</div>
+
+<h2 class="salto"><span class="n">5</span>Ejemplo resuelto: manivela-balancín</h2>
+<p>Datos de la Tabla P11-3, fila b, del Norton (se cargan con <i>Cargar ejemplo → Norton Tabla P11-3 · fila b</i>):</p>
+<table>
+  <thead><tr><th>Dato</th><th class="num">Valor</th><th>Dato</th><th class="num">Valor</th></tr></thead>
+  <tbody>
+    <tr><td>a (eslabón 2)</td><td class="num">3</td><td>θ2</td><td class="num">30°</td></tr>
+    <tr><td>b (eslabón 3)</td><td class="num">10</td><td>ω2</td><td class="num">10 rad/s</td></tr>
+    <tr><td>c (eslabón 4)</td><td class="num">12</td><td>α2</td><td class="num">−5 rad/s²</td></tr>
+    <tr><td>d (eslabón 1)</td><td class="num">6</td><td>Configuración</td><td class="num">abierta</td></tr>
+  </tbody>
+</table>
+<table>
+  <thead><tr><th>Resultado</th><th class="num">Programa</th><th class="num">Libro</th></tr></thead>
+  <tbody>
+    <tr><td>θ3 (posición del acoplador)</td><td class="num">90.149°</td><td class="num">90.15°</td></tr>
+    <tr><td>θ4 (posición del balancín)</td><td class="num">106.598°</td><td class="num">106.60°</td></tr>
+    <tr><td>ω3</td><td class="num">−10.306 rad/s</td><td class="num">−10.31 rad/s</td></tr>
+    <tr><td>ω4</td><td class="num">−7.657 rad/s</td><td class="num">−7.66 rad/s</td></tr>
+    <tr><td>α3</td><td class="num">140.962 rad/s²</td><td class="num">140.96 rad/s²</td></tr>
+    <tr><td>α4</td><td class="num">161.753 rad/s²</td><td class="num">161.75 rad/s²</td></tr>
+  </tbody>
+</table>
+<div class="caja">
+  <b>Pruébelo</b>
+  Con este ejemplo cargado, cambie θ2 de 30 a 60: las tarjetas pasan a θ3 = 69.41° y θ4 = 94.70°, con ω3 = −3.998 y ω4 = −0.957 rad/s. Cambie después ω2 de 10 a 20: θ3 y θ4 no cambian, mientras que ω3 y ω4 se duplican (−7.997 y −1.915 rad/s).
+</div>
+
+<h2 class="salto"><span class="n">6</span>Manivela-corredera</h2>
+<p>En la pestaña <i>Manivela-corredera</i> los datos son <span class="m">a</span> (manivela), <span class="m">b</span> (biela) y <span class="m">c</span> (descentrado de la guía; 0 si la guía pasa por O2). En lugar de θ4 se obtiene la posición de la corredera <span class="m">d</span>, su velocidad <span class="m">ḋ</span> y su aceleración <span class="m">d̈</span>.</p>
+<figure>
+  <img src="fig4-corredera.png" alt="Pestaña manivela-corredera" />
+  <figcaption>Figura 4. Manivela-corredera con la Tabla P11-1 fila b: a = 3, b = 10, c = 1, θ2 = 30°, ω2 = 15 rad/s, α2 = −5 rad/s².</figcaption>
+</figure>
+<table>
+  <thead><tr><th>Resultado</th><th class="num">Programa</th><th class="num">Libro</th></tr></thead>
+  <tbody>
+    <tr><td>θ3 (biela)</td><td class="num">177.134°</td><td class="num">177.13°</td></tr>
+    <tr><td>ω3</td><td class="num">−3.902 rad/s</td><td class="num">−3.90 rad/s</td></tr>
+    <tr><td>α3</td><td class="num">34.331 rad/s²</td><td class="num">34.33 rad/s²</td></tr>
+    <tr><td>Velocidad de la corredera ḋ</td><td class="num">−24.451</td><td class="num">24.45 ∠ 180°</td></tr>
+    <tr><td>Aceleración de la corredera d̈</td><td class="num">−711.967</td><td class="num">711.97 ∠ 180°</td></tr>
+  </tbody>
+</table>
+<div class="caja alerta">
+  <b>θ3 cerca de 180° es correcto</b>
+  En la corredera, el libro mide θ3 sobre el vector que va de B hacia A. Como la corredera está a la derecha de la manivela, ese vector apunta hacia la izquierda y θ3 queda cerca de 180°.
+</div>
+
+<h2 class="salto"><span class="n">7</span>Ver una vuelta completa</h2>
+<p>Al final de la página hay una gráfica que muestra cómo varía una magnitud mientras la manivela da una vuelta (θ2 de 0° a 360°). Elija la magnitud en el menú (θ3, ω4, α3, d̈, T12…). La línea roja marca el θ2 actual; al pasar el ratón se lee el valor y al hacer clic se lleva el mecanismo a ese ángulo. El botón <b>▶ Animar</b> hace girar la manivela, y <b>CSV (vuelta completa)</b> descarga todos los valores para abrirlos en Excel.</p>
+<figure>
+  <img src="fig3-grafica.png" alt="Gráfica de una vuelta" />
+  <figcaption>Figura 5. θ3 durante una vuelta de la manivela.</figcaption>
+</figure>
+
+<h2><span class="n">8</span>De dónde salen los números</h2>
+<p>El programa usa las ecuaciones de Norton, <i>Diseño de Maquinaria</i>, 4a Ed., las mismas de las diapositivas del curso.</p>
+<h3>Manivela-balancín</h3>
+<div class="formula">
+  K1 = d/a &nbsp;·&nbsp; K2 = d/c &nbsp;·&nbsp; K3 = (a² − b² + c² + d²)/(2ac) &nbsp;·&nbsp; K4 = d/b &nbsp;·&nbsp; K5 = (c² − d² − a² − b²)/(2ab)<br/>
+  A = cos θ2 − K1 − K2 cos θ2 + K3 &nbsp;·&nbsp; B = −2 sen θ2 &nbsp;·&nbsp; C = K1 − (K2 + 1) cos θ2 + K3<br/>
+  D = cos θ2 − K1 + K4 cos θ2 + K5 &nbsp;·&nbsp; E = −2 sen θ2 &nbsp;·&nbsp; F = K1 + (K4 − 1) cos θ2 + K5<br/>
+  θ4 = 2 arctan[(−B ∓ √(B² − 4AC)) / 2A] &nbsp;&nbsp; θ3 = 2 arctan[(−E ∓ √(E² − 4DF)) / 2D] &nbsp;<span class="pequeno">(− abierta, + cruzada)</span><br/>
+  ω3 = (a ω2 / b) · sen(θ4 − θ2) / sen(θ3 − θ4) &nbsp;&nbsp; ω4 = (a ω2 / c) · sen(θ2 − θ3) / sen(θ4 − θ3)<br/>
+  α3 = (CD − AF)/(AE − BD) &nbsp;&nbsp; α4 = (CE − BF)/(AE − BD) &nbsp;<span class="pequeno">(con los A…F de aceleración, ec. 7.12)</span>
+</div>
+<h3>Manivela-corredera</h3>
+<div class="formula">
+  θ3 = arcsen[−(a sen θ2 − c)/b] + π &nbsp;<span class="pequeno">(abierta)</span> &nbsp;&nbsp; d = a cos θ2 − b cos θ3<br/>
+  ω3 = (a/b) (cos θ2 / cos θ3) ω2 &nbsp;&nbsp; ḋ = −a ω2 sen θ2 + b ω3 sen θ3<br/>
+  α3 = (a α2 cos θ2 − a ω2² sen θ2 + b ω3² sen θ3) / (b cos θ3)<br/>
+  d̈ = −a α2 sen θ2 − a ω2² cos θ2 + b α3 sen θ3 + b ω3² cos θ3
+</div>
+<p>La velocidad y la aceleración de cualquier punto se obtienen con números complejos: V = j·ω·R·e<sup>jθ</sup> y a = (j·α − ω²)·R·e<sup>jθ</sup>, sumando la del punto de apoyo del eslabón.</p>
+
+<h2><span class="n">9</span>Convenciones y símbolos</h2>
+<div class="dos">
+<table>
+  <thead><tr><th>Símbolo</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td>θ</td><td>Ángulo del eslabón respecto al eje X, en grados, antihorario positivo</td></tr>
+    <tr><td>ω</td><td>Velocidad angular, rad/s (+ antihoraria)</td></tr>
+    <tr><td>α</td><td>Aceleración angular, rad/s²</td></tr>
+    <tr><td>R, V, a</td><td>Posición, velocidad y aceleración de un punto</td></tr>
+    <tr><td>B/A</td><td>Movimiento de B relativo a A</td></tr>
+  </tbody>
+</table>
+<table>
+  <thead><tr><th>Punto</th><th>Qué es</th></tr></thead>
+  <tbody>
+    <tr><td>O2, O4</td><td>Pivotes fijos de la bancada</td></tr>
+    <tr><td>A</td><td>Unión manivela–acoplador</td></tr>
+    <tr><td>B</td><td>Unión acoplador–balancín (o corredera)</td></tr>
+    <tr><td>G2, G3, G4</td><td>Centros de gravedad</td></tr>
+    <tr><td>P3, P4</td><td>Puntos de interés en los eslabones 3 y 4</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="pequeno">Los ángulos de salida están entre 0° y 360°. Un resultado de 350° equivale a −10°.</p>
+
+<div class="caja ok">
+  <b>¿Quiere comprobar que el programa calcula bien?</b>
+  La pestaña <i>Verificación Norton</i> recalcula las 7 filas de las Tablas P11-1, P11-2 y P11-3 del libro y las compara valor por valor: 127 de 133 coinciden exactamente y los otros 6 son erratas del libro, explicadas una por una.
+</div>
+
+</body>
+</html>

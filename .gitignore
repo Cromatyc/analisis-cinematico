@@ -9,3 +9,4 @@ Thumbs.db
 __pycache__/
 node_modules/
 .claude/
+!docs/Guia-de-uso.pdf

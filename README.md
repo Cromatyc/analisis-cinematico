@@ -37,6 +37,10 @@ Además de calcular, la aplicación:
 
 ## Uso
 
+📄 **[Guía de uso en PDF](docs/Guia-de-uso.pdf)**: explica paso a paso cómo obtener la posición, la velocidad y la aceleración, dónde leer cada resultado y qué cambia con cada dato.
+
+Aplicación en línea: https://cromatyc.github.io/analisis-cinematico/ (también se puede abrir directamente en una pestaña con `#balancin`, `#corredera` o `#verificacion`).
+
 Basta con abrir `index.html` en el navegador; no requiere instalar nada.
 
 Para servirla en local:
@@ -104,6 +108,7 @@ Fuerzas dinámicas: cap. 11 (método matricial de Newton-Euler, secs. 11.6 a 11.
 
 ```
 index.html            interfaz
+docs/Guia-de-uso.pdf  guía de uso (fuente en docs/guia/guia.html)
 css/estilos.css       estilos (tema claro/oscuro)
 js/cinematica.js      cálculos (sin dependencias; sirve también en Node)
 js/dinamica.js        fuerzas dinámicas (Newton-Euler)
