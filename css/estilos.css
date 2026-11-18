@@ -12,6 +12,7 @@
   --e3: #f59e0b;   /* eslabón 3 */
   --e4: #10b981;   /* eslabón 4 */
   --vel: #7c3aed;
+  --fuerza: #0891b2;
   --acc: #e11d48;
   --ok: #16a34a;
   --ok-suave: #dcfce7;
@@ -29,7 +30,7 @@
     --fondo: #0b1120; --superficie: #111827; --superficie-2: #0f172a; --borde: #1f2a3c;
     --texto: #e5e7eb; --texto-2: #9ca3af; --texto-3: #64748b;
     --primario: #60a5fa; --primario-suave: #1e3a8a55;
-    --e2: #60a5fa; --e3: #fbbf24; --e4: #34d399; --vel: #a78bfa; --acc: #fb7185;
+    --e2: #60a5fa; --e3: #fbbf24; --e4: #34d399; --vel: #a78bfa; --fuerza: #22d3ee; --acc: #fb7185;
     --ok: #4ade80; --ok-suave: #14532d66; --err: #fbbf24; --err-suave: #78350f66; --mal: #f87171; --mal-suave: #7f1d1d66;
     --sombra: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
     color-scheme: dark;
@@ -39,7 +40,7 @@
   --fondo: #0b1120; --superficie: #111827; --superficie-2: #0f172a; --borde: #1f2a3c;
   --texto: #e5e7eb; --texto-2: #9ca3af; --texto-3: #64748b;
   --primario: #60a5fa; --primario-suave: #1e3a8a55;
-  --e2: #60a5fa; --e3: #fbbf24; --e4: #34d399; --vel: #a78bfa; --acc: #fb7185;
+  --e2: #60a5fa; --e3: #fbbf24; --e4: #34d399; --vel: #a78bfa; --fuerza: #22d3ee; --acc: #fb7185;
   --ok: #4ade80; --ok-suave: #14532d66; --err: #fbbf24; --err-suave: #78350f66; --mal: #f87171; --mal-suave: #7f1d1d66;
   --sombra: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
   color-scheme: dark;
@@ -136,7 +137,7 @@ details[open] summary { margin-bottom: 8px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--texto-2); background: var(--superficie-2); border: 1px solid var(--borde); padding: 5px 10px; border-radius: 999px; cursor: pointer; user-select: none; }
 .chip input { margin: 0; accent-color: var(--primario); }
 .punto { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.punto.v { background: var(--vel); } .punto.a { background: var(--acc); }
+.punto.v { background: var(--vel); } .punto.f { background: var(--fuerza); } .punto.a { background: var(--acc); }
 
 /* ---------------- lienzos ---------------- */
 canvas { width: 100%; display: block; border-radius: 10px; background: var(--superficie-2); }
@@ -162,6 +163,9 @@ td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 td:first-child { font-family: inherit; font-weight: 550; }
 td small { color: var(--texto-3); font-family: system-ui, sans-serif; font-weight: 400; }
 tr:last-child td { border-bottom: 0; }
+.ancho-total { grid-column: 1 / -1; }
+.sub-rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 18px; }
+.grupo h4 { font-size: 12.5px; font-weight: 650; color: var(--texto-2); margin: 14px 0 4px; }
 .tabla-scroll { overflow-x: auto; }
 
 /* ---------------- verificación ---------------- */

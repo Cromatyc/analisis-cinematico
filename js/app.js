@@ -1,7 +1,7 @@
 /* app.js — interfaz de usuario */
 (function () {
   "use strict";
-  const K = window.Cinematica, DN = window.DatosNorton, VF = window.Verificacion;
+  const K = window.Cinematica, DN = window.DatosNorton, VF = window.Verificacion, DY = window.Dinamica;
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => [...document.querySelectorAll(s)];
 
@@ -13,12 +13,20 @@
       eslabones: [["a", "a", "eslabón 2 · manivela"], ["b", "b", "eslabón 3 · acoplador"], ["c", "c", "eslabón 4 · balancín"], ["d", "d", "eslabón 1 · bancada"]],
       cg: [["Rg2", "R<sub>g2</sub>"], ["d2", "δ<sub>2</sub> °"], ["Rg3", "R<sub>g3</sub>"], ["d3", "δ<sub>3</sub> °"], ["Rg4", "R<sub>g4</sub>"], ["d4", "δ<sub>4</sub> °"]],
       p: [["Rp3", "R<sub>P3</sub>"], ["dp3", "δ<sub>RP3</sub> °"], ["Rp4", "R<sub>P4</sub>"], ["dp4", "δ<sub>RP4</sub> °"]],
+      din: [["m2", "m<sub>2</sub>"], ["I2", "I<sub>G2</sub>"], ["m3", "m<sub>3</sub>"], ["I3", "I<sub>G3</sub>"], ["m4", "m<sub>4</sub>"], ["I4", "I<sub>G4</sub>"],
+        ["Fp3", "F<sub>P3</sub>", "magnitud"], ["dFp3", "δ<sub>FP3</sub> °", "resp. a X"], ["Fp4", "F<sub>P4</sub>", "magnitud"], ["dFp4", "δ<sub>FP4</sub> °", "resp. a X"],
+        ["T3", "T<sub>3</sub>", "par externo"], ["T4", "T<sub>4</sub>", "par externo"]],
+      ayudaDin: "Masas, momentos de inercia respecto al CG, fuerzas externas en P3 y P4 (ángulo respecto al eje X global) y pares externos T3, T4 (+ antihorario). Use unidades consistentes: blob-pulg-lb o kg-m-N.",
       defecto: DN.cuatroBarras[1].entrada,
     },
     manivelaCorredera: {
       eslabones: [["a", "a", "eslabón 2 · manivela"], ["b", "b", "eslabón 3 · biela"], ["c", "c", "descentrado"]],
       cg: [["Rg2", "R<sub>g2</sub>"], ["d2", "δ<sub>2</sub> °"], ["Rg3", "R<sub>g3</sub>"], ["d3", "δ<sub>3</sub> °"]],
       p: [["Rp3", "R<sub>P3</sub>"], ["dp3", "δ<sub>RP3</sub> °"]],
+      din: [["m2", "m<sub>2</sub>"], ["I2", "I<sub>G2</sub>"], ["m3", "m<sub>3</sub>"], ["I3", "I<sub>G3</sub>"], ["m4", "m<sub>4</sub>", "corredera"], ["mu", "μ", "fricción guía"],
+        ["Fp3", "F<sub>P3</sub>", "magnitud"], ["dFp3", "δ<sub>FP3</sub> °", "resp. a AB"], ["Fp4", "F<sub>4</sub>", "sobre corredera"], ["dFp4", "δ<sub>F4</sub> °", "resp. a X"],
+        ["T3", "T<sub>3</sub>", "par externo"]],
+      ayudaDin: "Masas, momentos de inercia respecto al CG, fuerza externa en P3 (ángulo respecto a la línea AB, figura P11-1), fuerza externa sobre la corredera (ángulo respecto a X), par externo T3 (+ antihorario) y fricción μ entre corredera y guía. Use unidades consistentes: blob-pulg-lb o kg-m-N.",
       defecto: DN.corredera[1].entrada,
     },
   };
@@ -70,16 +78,20 @@
     $("#campos-eslabones").innerHTML = def.eslabones.map(([k, l, s]) => campoHTML(k, l, s)).join("");
     $("#campos-cg").innerHTML = def.cg.map(([k, l]) => campoHTML(k, l)).join("");
     $("#campos-p").innerHTML = def.p.map(([k, l]) => campoHTML(k, l)).join("");
+    $("#campos-din").innerHTML = def.din.map(([k, l, s]) => campoHTML(k, l, s)).join("");
+    $("#ayuda-din").textContent = def.ayudaDin;
     $("#ejemplo").innerHTML = `<option value="">Cargar ejemplo…</option>` +
       EJEMPLOS[estado.modo].map((e, i) => `<option value="${i}">${e.nombre}</option>`).join("");
     volcarValores();
     $$("#form input[data-k]").forEach((inp) => inp.addEventListener("input", alEditar));
 
     const mags = estado.modo === "cuatroBarras"
-      ? [["th3", "θ3 (°)"], ["th4", "θ4 (°)"], ["w3", "ω3 (rad/s)"], ["w4", "ω4 (rad/s)"], ["al3", "α3 (rad/s²)"], ["al4", "α4 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"], ["AP3", "|a_P3|"]]
-      : [["d", "Posición corredera d"], ["dd", "Velocidad corredera ḋ"], ["ddd", "Aceleración corredera d̈"], ["th3", "θ3 (°)"], ["w3", "ω3 (rad/s)"], ["al3", "α3 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"]];
+      ? [["th3", "θ3 (°)"], ["th4", "θ4 (°)"], ["w3", "ω3 (rad/s)"], ["w4", "ω4 (rad/s)"], ["al3", "α3 (rad/s²)"], ["al4", "α4 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"], ["AP3", "|a_P3|"], ...FUERZAS_GRAF]
+      : [["d", "Posición corredera d"], ["dd", "Velocidad corredera ḋ"], ["ddd", "Aceleración corredera d̈"], ["th3", "θ3 (°)"], ["w3", "ω3 (rad/s)"], ["al3", "α3 (rad/s²)"], ["mu", "Ángulo de transmisión μ (°)"], ["VP3", "|V_P3|"], ["AG3", "|a_G3|"], ...FUERZAS_GRAF];
     $("#magnitud").innerHTML = mags.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
   }
+
+  const FUERZAS_GRAF = [["T12", "Par motor T12"], ["F12", "|F12| (pasador O2)"], ["F32", "|F32| (pasador A)"], ["F43", "|F43| (pasador B)"], ["F14", "|F14| (O4 o guía)"], ["Fs", "|Fuerza de sacudimiento|"], ["pot", "Potencia del motor T12·ω2"]];
 
   function volcarValores() {
     const v = estado.valores[estado.modo];
@@ -109,7 +121,12 @@
 
   function calcular() {
     const p = parametros();
-    const fn = K[estado.modo];
+    const fk = K[estado.modo];
+    const fn = (q) => {
+      const r = fk(q);
+      try { r.fuerzas = DY.fuerzas(r); r.errorFuerzas = null; } catch (e) { r.fuerzas = null; r.errorFuerzas = e.message; }
+      return r;
+    };
     const err = $("#error");
     escribirLS("ac-estado", estado.valores);
     try {
@@ -146,12 +163,14 @@
   function pintarResumen() {
     const r = estado.resultado, el = $("#resumen");
     if (!r) { el.innerHTML = ""; return; }
+    const F = r.fuerzas;
+    const tDin = F ? tarjeta("e2", "Par motor T12", fmt(F.T12, 3), `potencia T12·ω2 = ${fmt(F.potencia, 2)}`) : "";
     if (r.tipo === "cuatroBarras") {
       el.innerHTML =
         tarjeta("e3", "θ3 · acoplador", fmt(r.angulos.th3, 3) + "°", `ω3 = ${fmt(r.w.w3, 3)} · α3 = ${fmt(r.al.al3, 2)}`) +
         tarjeta("e4", "θ4 · balancín", fmt(r.angulos.th4, 3) + "°", `ω4 = ${fmt(r.w.w4, 3)} · α4 = ${fmt(r.al.al4, 2)}`) +
         tarjeta("", "Ángulo de transmisión", fmt(r.extra.transmision, 2) + "°", r.extra.transmision < 40 ? "⚠ menor a 40°" : "aceptable (≥ 40°)") +
-        tarjeta("", "Condición de Grashof", r.extra.grashof.clase === "I" ? "Clase I" : r.extra.grashof.clase === "II" ? "Clase II" : "Clase III", r.extra.grashof.tipo);
+        tarjeta("", "Condición de Grashof", r.extra.grashof.clase === "I" ? "Clase I" : r.extra.grashof.clase === "II" ? "Clase II" : "Clase III", r.extra.grashof.tipo) + tDin;
     } else {
       const ca = r.extra.carrera;
       el.innerHTML =
@@ -159,7 +178,7 @@
         tarjeta("e4", "Corredera d", fmt(r.corredera.d, 4), `ḋ = ${fmt(r.corredera.dd, 3)}`) +
         tarjeta("e4", "Aceleración d̈", fmt(r.corredera.ddd, 3), "de la corredera") +
         tarjeta("", "Carrera", ca ? fmt(ca.carrera, 4) : "—", ca ? `d entre ${fmt(ca.dmin, 3)} y ${fmt(ca.dmax, 3)}` : "la manivela no da vuelta completa") +
-        tarjeta("", "Ángulo de transmisión", fmt(r.extra.transmision, 2) + "°", r.extra.transmision < 40 ? "⚠ menor a 40°" : "aceptable (≥ 40°)");
+        tarjeta("", "Ángulo de transmisión", fmt(r.extra.transmision, 2) + "°", r.extra.transmision < 40 ? "⚠ menor a 40°" : "aceptable (≥ 40°)") + tDin;
     }
   }
 
@@ -181,6 +200,43 @@
 
   function tablaEscalares(filas) {
     return `<table><tbody>${filas.map(([n, v, u]) => `<tr><td>${n}</td><td>${v} <small>${u || ""}</small></td></tr>`).join("")}</tbody></table>`;
+  }
+
+  const NOMBRES_F = {
+    F12: "F<sub>12</sub> <small>bancada → 2 (O2)</small>", F32: "F<sub>32</sub> <small>3 → 2 (A)</small>", F43: "F<sub>43</sub> <small>4 → 3 (B)</small>",
+    F14: "F<sub>14</sub> <small>bancada → 4</small>", F21: "F<sub>21</sub> <small>2 → bancada</small>", F41: "F<sub>41</sub> <small>4 → bancada</small>",
+    Fs: "F<sub>s</sub> <small>sacudimiento</small>",
+    G2: "−m<sub>2</sub>a<sub>G2</sub>", G3: "−m<sub>3</sub>a<sub>G3</sub>", G4: "−m<sub>4</sub>a<sub>G4</sub>",
+  };
+  function tablaFuerzas(dic, claves) {
+    const filas = claves.filter((k) => dic[k]).map((k) => {
+      const v = dic[k];
+      return `<tr><td>${NOMBRES_F[k]}</td><td>${fmt(v.x, 3)}</td><td>${fmt(v.y, 3)}</td><td>${fmt(v.mag, 3)}</td><td>${fmt(v.ang, 2)}°</td></tr>`;
+    }).join("");
+    return `<div class="tabla-scroll"><table><thead><tr><th></th><th>x</th><th>y</th><th>magnitud</th><th>ángulo</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+  }
+
+  function grupoFuerzas(r) {
+    if (r.errorFuerzas) return `<div class="grupo ancho-total" style="--c:var(--mal)"><h3>Fuerzas dinámicas</h3><p class="ayuda">${r.errorFuerzas}</p></div>`;
+    const F = r.fuerzas;
+    if (!F) return `<div class="grupo ancho-total" style="--c:var(--texto-3)"><h3>Fuerzas dinámicas</h3><p class="ayuda">Ingrese masas, inercias o cargas en la sección <b>Dinámica</b> para calcular las fuerzas en los pasadores y el par motor.</p></div>`;
+    const cb = r.tipo === "cuatroBarras";
+    const comp = F.errorPotencia < 1e-6;
+    const esc = [
+      ["T12 <small>par motor sobre el eslabón 2</small>", fmt(F.T12, 4)],
+      ["T<sub>s</sub> = T21 <small>par de sacudimiento</small>", fmt(F.Ts, 4)],
+      ["Potencia T12·ω2", fmt(F.potencia, 3)],
+    ];
+    if (!cb) esc.push(["Fricción en la guía F14x", fmt(F.friccion, 4)], ["Normal de la guía F14y", fmt(F.F14.y, 4)]);
+    esc.push(["Comprobación por potencia", `<span class="et ${comp ? "ok" : "falla"}">${comp ? "cumple" : "no cumple"}</span> <small>motor + cargas ${fmt(F.potEntrada, 3)} = inercia ${fmt(F.potInercia, 3)}</small>`]);
+    const ine = [["−I<sub>G2</sub>α<sub>2</sub>", fmt(F.inercia.T2, 4)], ["−I<sub>G3</sub>α<sub>3</sub>", fmt(F.inercia.T3, 4)]];
+    if (cb) ine.push(["−I<sub>G4</sub>α<sub>4</sub>", fmt(F.inercia.T4, 4)]);
+    return `<div class="grupo ancho-total" style="--c:var(--fuerza)"><h3>Fuerzas dinámicas (Newton-Euler, Norton cap. 11)</h3>
+      <div class="sub-rejilla">
+        <div>${tablaEscalares(esc)}<h4>Fuerzas en los pasadores</h4>${tablaFuerzas(F, ["F12", "F32", "F43", "F14"])}</div>
+        <div><h4>Fuerzas sobre la bancada</h4>${tablaFuerzas(F, ["F21", "F41", "Fs"])}
+          <h4>Fuerzas y pares de inercia (d’Alembert)</h4>${tablaFuerzas(F.inercia, ["G2", "G3", "G4"])}${tablaEscalares(ine)}</div>
+      </div></div>`;
   }
 
   function pintarResultados() {
@@ -220,7 +276,8 @@
       <div class="grupo" style="--c:var(--e2)"><h3>Posición</h3>${tablaEscalares(posEsc)}${tablaVectores(r.puntos, ptsPos, "R")}</div>
       <div class="grupo" style="--c:var(--vel)"><h3>Velocidad</h3>${tablaEscalares(velEsc)}${tablaVectores(r.V, ptsV, "V")}</div>
       <div class="grupo" style="--c:var(--acc)"><h3>Aceleración</h3>${tablaEscalares(accEsc)}${tablaVectores(r.Ac, ptsV, "a")}</div>
-      <div class="grupo" style="--c:var(--e4)"><h3>Otros datos</h3>${otros}</div>`;
+      <div class="grupo" style="--c:var(--e4)"><h3>Otros datos</h3>${otros}</div>
+      ${grupoFuerzas(r)}`;
   }
 
   // ------------------------------------------------------------------
@@ -386,6 +443,18 @@
     const claves = cb ? ["A", "B", "G3", "P3"] : ["A", "B", "G3", "P3"];
     if ($("#ver-vel").checked) vectores(r.V, c.v, claves);
     if ($("#ver-acc").checked) vectores(r.Ac, c.a, claves);
+    const F = r.fuerzas;
+    if ($("#ver-fza").checked && F) {
+      const cf = cssVar("--fuerza");
+      const lista = [[F.F12, P.O2, "F12"], [F.F32, P.A, "F32"], [F.F43, P.B, "F43"], [F.F14, cb ? P.O4 : P.B, "F14"]];
+      const max = Math.max(...lista.map(([v]) => v.mag), 1e-9);
+      ctx.font = "600 12px system-ui";
+      lista.forEach(([v, pt, nom]) => {
+        const [x, y] = T(pt), x2 = x + (v.x / max) * L, y2 = y - (v.y / max) * L;
+        flecha(ctx, x, y, x2, y2, cf);
+        if (v.mag > 1e-9) { ctx.fillStyle = cf; ctx.fillText(nom, x2 + 4, y2 - 4); }
+      });
+    }
 
     // rótulo de configuración
     ctx.fillStyle = c.t3; ctx.font = "12px system-ui";
@@ -411,6 +480,9 @@
       case "d": return q.corredera.d;
       case "dd": return q.corredera.dd;
       case "ddd": return q.corredera.ddd;
+      case "T12": return q.fuerzas ? q.fuerzas.T12 : null;
+      case "pot": return q.fuerzas ? q.fuerzas.potencia : null;
+      case "F12": case "F32": case "F43": case "F14": case "Fs": return q.fuerzas ? q.fuerzas[k].mag : null;
     }
     return null;
   }
@@ -499,6 +571,11 @@
       L.push(titulo + ":");
       Object.entries(dic).forEach(([k, v]) => L.push(`  ${k.padEnd(3)} = ${fmt(v.mag, 4)} ∠ ${fmt(v.ang, 3)}°   (x=${fmt(v.x, 4)}, y=${fmt(v.y, 4)})`));
     }
+    const F = r.fuerzas;
+    if (F) {
+      L.push("", "Fuerzas dinámicas:", `  T12 = ${fmt(F.T12, 4)}   (par de sacudimiento T21 = ${fmt(F.Ts, 4)})`);
+      ["F12", "F32", "F43", "F14", "Fs"].forEach((k) => L.push(`  ${k.padEnd(3)} = ${fmt(F[k].mag, 4)} ∠ ${fmt(F[k].ang, 3)}°   (x=${fmt(F[k].x, 4)}, y=${fmt(F[k].y, 4)})`));
+    }
     return L.join("\n");
   }
 
@@ -507,12 +584,15 @@
     const cab = cb
       ? ["th2", "th3", "th4", "w3", "w4", "al3", "al4", "mu", "VA", "VB", "VG3", "VP3", "AA", "AB", "AG2", "AG3", "AG4", "AP3"]
       : ["th2", "th3", "d", "dd", "ddd", "w3", "al3", "mu", "VA", "VG3", "VP3", "AA", "AG2", "AG3", "AP3"];
+    const conF = estado.barrido.some(({ r }) => r && r.fuerzas);
+    if (conF) cab.push("T12", "F12", "F32", "F43", "F14", "Fs", "potencia");
     const filas = estado.barrido.map(({ th2, r }) => {
       if (!r) return [th2, ...cab.slice(1).map(() => "")].join(",");
+      const fz = conF ? (r.fuerzas ? [r.fuerzas.T12, r.fuerzas.F12.mag, r.fuerzas.F32.mag, r.fuerzas.F43.mag, r.fuerzas.F14.mag, r.fuerzas.Fs.mag, r.fuerzas.potencia] : ["", "", "", "", "", "", ""]) : [];
       const v = cb
         ? [th2, r.angulos.th3, r.angulos.th4, r.w.w3, r.w.w4, r.al.al3, r.al.al4, r.extra.transmision, r.V.A.mag, r.V.B.mag, r.V.G3.mag, r.V.P3.mag, r.Ac.A.mag, r.Ac.B.mag, r.Ac.G2.mag, r.Ac.G3.mag, r.Ac.G4.mag, r.Ac.P3.mag]
         : [th2, r.angulos.th3, r.corredera.d, r.corredera.dd, r.corredera.ddd, r.w.w3, r.al.al3, r.extra.transmision, r.V.A.mag, r.V.G3.mag, r.V.P3.mag, r.Ac.A.mag, r.Ac.G2.mag, r.Ac.G3.mag, r.Ac.P3.mag];
-      return v.map((x) => (typeof x === "number" ? x.toFixed(6) : x)).join(",");
+      return [...v, ...fz].map((x) => (typeof x === "number" ? x.toFixed(6) : x)).join(",");
     });
     const blob = new Blob([cab.join(",") + "\n" + filas.join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -551,6 +631,14 @@
     $("#verif-tablas").innerHTML =
       bloque("Manivela-corredera — Tablas P11-1 y P11-2", res.corredera) +
       bloque("Cuatro barras — Tabla P11-3", res.cuatroBarras);
+    const dyn = VF.verificarDinamica();
+    $("#verif-tablas").innerHTML += `<div class="verif-grupo"><h3>Fuerzas dinámicas — comprobación independiente</h3>
+      <p class="ayuda">El libro no publica las respuestas de fuerzas de estas tablas. Por eso cada resultado se comprueba con dos métodos independientes del sistema matricial:
+      el <b>balance de potencia</b> (trabajo virtual, sección 11.13: T12·ω2 + ΣF·V + ΣT·ω = Σm·a<sub>G</sub>·V<sub>G</sub> + ΣI·α·ω)
+      y el <b>equilibrio global</b> (F12 + F14 + ΣF<sub>ext</sub> = Σm·a<sub>G</sub>).</p>
+      <div class="verif-fila"><div class="tabla-scroll"><table><thead><tr><th>Fila</th><th>T12</th><th>|F12|</th><th>|F32|</th><th>|F43|</th><th>|F14|</th><th>Potencia entrada</th><th>Potencia inercia</th><th>Estado</th></tr></thead><tbody>
+      ${dyn.map((d) => `<tr><td>${d.mecanismo} · ${d.fila}</td><td>${fmt(d.T12, 3)}</td><td>${fmt(d.F12.mag, 3)}</td><td>${fmt(d.F32.mag, 3)}</td><td>${fmt(d.F43.mag, 3)}</td><td>${fmt(d.F14.mag, 3)}</td><td>${fmt(d.potEntrada, 3)}</td><td>${fmt(d.potInercia, 3)}</td><td><span class="et ${d.ok ? "ok" : "falla"}">${d.ok ? "cumple" : "falla"}</span></td></tr>`).join("")}
+      </tbody></table></div></div></div>`;
     $$("#verif-tablas .cargar").forEach((b) => b.addEventListener("click", () => {
       const lista = b.dataset.modo === "cuatroBarras" ? DN.cuatroBarras : DN.corredera;
       const fila = lista.find((x) => x.fila === b.dataset.fila);
@@ -630,7 +718,7 @@
       volcarValores(); calcular();
       e.target.value = "";
     });
-    ["#ver-vel", "#ver-acc", "#ver-tray"].forEach((s) => $(s).addEventListener("change", dibujarMecanismo));
+    ["#ver-vel", "#ver-acc", "#ver-fza", "#ver-tray"].forEach((s) => $(s).addEventListener("change", dibujarMecanismo));
     $("#magnitud").addEventListener("change", dibujarGrafica);
     const g = $("#grafica");
     g.addEventListener("mousemove", (e) => { hoverX = e.offsetX; dibujarGrafica(); });

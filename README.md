@@ -13,6 +13,19 @@ Se ingresan las longitudes y los datos del eslabón de entrada (θ2, ω2, α2), 
 | Velocidad | ω3, ω4, V_A, V_B, V_B/A, V_G2, V_G3, V_G4, V_P3, V_P4 | ω3, ḋ, V_A, V_B, V_B/A, V_G2, V_G3, V_G4, V_P3 |
 | Aceleración | α3, α4, a_A, a_B, a_B/A, a_G2, a_G3, a_G4, a_P3, a_P4 | α3, d̈, a_A, a_B, a_B/A, a_G2, a_G3, a_G4, a_P3 |
 | Otros | Condición de Grashof, ángulo de transmisión, K1–K5, A–F | Carrera, d mín./máx., ángulo de transmisión |
+| **Fuerzas** (cap. 11) | F12, F32, F43, F14, par motor T12, F21, F41, fuerza y par de sacudimiento, fuerzas y pares de inercia, potencia | ídem, más la normal y la fricción de la guía |
+
+### Fuerzas dinámicas
+
+Si se ingresan las masas, los momentos de inercia (respecto al CG), las fuerzas externas en P3 y P4 y los pares externos T3 y T4, la aplicación resuelve el sistema de Newton-Euler de Norton (cap. 11):
+
+- **Cuatro barras:** 9 ecuaciones con 9 incógnitas (F12, F32, F43, F14 y T12).
+- **Manivela-corredera:** 8 ecuaciones; además admite fricción μ entre la corredera y la guía, opuesta a la velocidad.
+
+Para las fuerzas externas:
+
+- **Cuatro barras:** los ángulos δ_FP3 y δ_FP4 se miden respecto al eje X global.
+- **Manivela-corredera:** δ_FP3 se mide respecto a la línea AB (figura P11-1), y la fuerza sobre la corredera, respecto a X.
 
 Además de calcular, la aplicación:
 
@@ -55,7 +68,18 @@ El programa se comparó con las 7 filas de las Tablas **P11-1, P11-2 y P11-3** d
 node test/verificar.js
 ```
 
-La comparación también se puede ver en la pestaña **Verificación Norton** de la aplicación.
+El libro no publica las respuestas de fuerzas de estas tablas. Por eso el análisis dinámico se comprueba con dos métodos independientes del sistema matricial, en las 14 filas:
+
+- **Balance de potencia** (trabajo virtual, sección 11.13).
+- **Equilibrio global** del mecanismo.
+
+También se comprueba con un caso estático resuelto a mano y con pruebas de la fricción:
+
+```bash
+node test/dinamica.js
+```
+
+Ambas comparaciones también se pueden ver en la pestaña **Verificación Norton** de la aplicación.
 
 ## Convenciones
 
@@ -74,15 +98,19 @@ Norton, *Diseño de Maquinaria* 4a Ed.:
 | Cuatro barras | ec. 4.10 | ec. 6.18 | ec. 7.12 |
 | Manivela-corredera | ec. 4.17 | ec. 6.22 | ec. 7.16 |
 
+Fuerzas dinámicas: cap. 11 (método matricial de Newton-Euler, secs. 11.6 a 11.8 y 11.13).
+
 ## Estructura
 
 ```
 index.html            interfaz
 css/estilos.css       estilos (tema claro/oscuro)
 js/cinematica.js      cálculos (sin dependencias; sirve también en Node)
+js/dinamica.js        fuerzas dinámicas (Newton-Euler)
 js/datos-norton.js    datos y resultados de las tablas del libro
 js/verificacion.js    comparación programa vs. libro
 js/app.js             lógica de la interfaz
-test/verificar.js     verificación por consola (Node)
-python/               versión de consola en Python
+test/verificar.js     verificación cinemática por consola (Node)
+test/dinamica.js      comprobación de las fuerzas dinámicas (Node)
+python/               versión de consola en Python (solo cinemática)
 ```

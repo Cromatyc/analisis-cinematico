@@ -9,6 +9,7 @@
 
   const K = typeof module !== "undefined" && module.exports ? require("./cinematica.js") : global.Cinematica;
   const DN = typeof module !== "undefined" && module.exports ? require("./datos-norton.js") : global.DatosNorton;
+  const DY = typeof module !== "undefined" && module.exports ? require("./dinamica.js") : global.Dinamica;
 
   const difAng = (x, y) => Math.abs((((x - y) % 360) + 540) % 360 - 180);
   // Los valores del libro tienen 2 decimales: se acepta el error de redondeo
@@ -87,7 +88,31 @@
     return { corredera: verificarCorredera(), cuatroBarras: verificarCuatroBarras() };
   }
 
-  const api = { verificarTodo };
+  /**
+   * Comprobación dinámica (el libro no publica las fuerzas de estas tablas):
+   * balance de potencia (trabajo virtual) y equilibrio global del mecanismo.
+   */
+  function verificarDinamica() {
+    const filas = [];
+    const grupos = [["Manivela-corredera (P11-1)", DN.corredera, K.manivelaCorredera], ["Cuatro barras (P11-3)", DN.cuatroBarras, K.cuatroBarras]];
+    for (const [nombre, datos, fn] of grupos) {
+      for (const { fila, entrada } of datos) {
+        const r = fn(entrada), F = DY.fuerzas(r), e = r.entrada;
+        const ext = { x: F.FP3.x + F.FP4.x, y: F.FP3.y + F.FP4.y };
+        const sma = { x: 0, y: 0 };
+        [["m2", "G2"], ["m3", "G3"], ["m4", "G4"]].forEach(([m, g]) => { sma.x += (+e[m] || 0) * r.Ac[g].x; sma.y += (+e[m] || 0) * r.Ac[g].y; });
+        const residuo = Math.hypot(F.F12.x + F.F14.x + ext.x - sma.x, F.F12.y + F.F14.y + ext.y - sma.y);
+        filas.push({
+          mecanismo: nombre, fila, T12: F.T12, F12: F.F12, F32: F.F32, F43: F.F43, F14: F.F14,
+          potEntrada: F.potEntrada, potInercia: F.potInercia,
+          ok: F.errorPotencia < 1e-9 && residuo < 1e-9 * Math.max(1, F.F12.mag),
+        });
+      }
+    }
+    return filas;
+  }
+
+  const api = { verificarTodo, verificarDinamica };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.Verificacion = api;
 })(typeof window !== "undefined" ? window : globalThis);
