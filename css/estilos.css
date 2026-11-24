@@ -251,3 +251,13 @@ details.mini summary { text-transform: none; letter-spacing: 0; font-weight: 550
   .tabla-simple td::before { content: attr(data-etq); width: 92px; flex: none; font-size: 12.5px; color: var(--texto-3); }
   .tabla-simple td small { display: inline; margin: 0 0 0 4px; }
 }
+
+/* sistema matricial [A]·{F} = {B} */
+.matriz-sistema .tabla-scroll { margin-top: 6px; }
+table.matriz td, table.matriz th { padding: 4px 7px; font-size: 12.5px; }
+table.matriz td.ec, table.matriz td.sim { text-align: left; font-family: system-ui, sans-serif; color: var(--texto-2); }
+table.matriz td.sim { font-size: 11.5px; color: var(--texto-3); }
+table.matriz td.cero { color: var(--texto-3); }
+table.matriz td.b { font-weight: 700; }
+table.matriz .sep { width: 10px; padding: 0; border-left: 2px solid var(--borde); }
+.copiar-matriz { margin-top: 8px; font-size: 12.5px; padding: 6px 10px; }

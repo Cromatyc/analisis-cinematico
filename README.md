@@ -22,6 +22,8 @@ Si se ingresan las masas, los momentos de inercia (respecto al CG), las fuerzas 
 - **Cuatro barras:** 9 ecuaciones con 9 incógnitas (F12, F32, F43, F14 y T12).
 - **Manivela-corredera:** 8 ecuaciones; además admite fricción μ entre la corredera y la guía, opuesta a la velocidad.
 
+En **Más detalles → Fuerzas → Sistema matricial [A]·{F} = {B}** se ve el sistema completo con sus valores numéricos: la matriz A, el vector B con la expresión de cada término, y la solución F. El botón *Copiar A y B* los copia en formato de tabla para pegarlos en Excel.
+
 Para las fuerzas externas:
 
 - **Cuatro barras:** los ángulos δ_FP3 y δ_FP4 se miden respecto al eje X global.

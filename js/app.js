@@ -272,8 +272,40 @@
     ];
     const comp = F.errorPotencia < 1e-6;
     $("#det-fuerzas").innerHTML = filasDato(filasF) +
-      `<p class="nota">F<sub>ij</sub> = fuerza del eslabón i sobre el j. Comprobación por balance de potencia: <span class="et ${comp ? "ok" : "falla"}">${comp ? "cumple" : "no cumple"}</span></p>`;
+      `<p class="nota">F<sub>ij</sub> = fuerza del eslabón i sobre el j. Comprobación por balance de potencia: <span class="et ${comp ? "ok" : "falla"}">${comp ? "cumple" : "no cumple"}</span></p>` +
+      tablaSistema(F.sistema, cb);
   }
+
+  /** Sistema de Newton-Euler [A]·{F} = {B} con los valores numéricos (Norton, cap. 11) */
+  function tablaSistema(S, cb) {
+    if (!S) return "";
+    const num = (v) => (Math.abs(v) < 5e-13 ? "0" : fmt(v, 4));
+    const enc = S.incognitas.map((u) => `<th>${u}</th>`).join("");
+    const filas = S.A.map((fila, i) =>
+      `<tr><td class="ec">${S.ecuaciones[i]}</td>${fila.map((v) => `<td class="${Math.abs(v) < 5e-13 ? "cero" : ""}">${num(v)}</td>`).join("")}` +
+      `<td class="sep"></td><td class="b">${num(S.b[i])}</td><td class="sim">${S.terminosB[i]}</td>` +
+      `<td class="sep"></td><td>${S.incognitas[i]} = ${num(S.x[i])}</td></tr>`).join("");
+    const texto = (fila) => fila.map((v) => num(v)).join("\t");
+    const copia = [
+      ["", ...S.incognitas, "B"].join("\t"),
+      ...S.A.map((fila, i) => [S.ecuaciones[i], texto(fila), num(S.b[i])].join("\t")),
+    ].join("\n");
+    const muTxt = !cb && S.mu ? ` En la fila ΣFx de la corredera, la columna F14y lleva el coeficiente ±μ = ${num(S.mu)}: su signo hace que la fricción se oponga a la velocidad.` : "";
+    return `<details class="mini matriz-sistema"><summary>Sistema matricial [A]·{F} = {B}</summary>
+      <p class="ayuda">Ecuaciones de Newton-Euler de cada eslabón (ΣF = m·a<sub>G</sub>, ΣM<sub>G</sub> = I<sub>G</sub>·α). Las columnas de A son las incógnitas; los brazos R se miden desde el CG de cada eslabón.${muTxt}</p>
+      <div class="tabla-scroll"><table class="matriz"><thead><tr><th>Ecuación</th>${enc}<th class="sep"></th><th>B</th><th>Término de B</th><th class="sep"></th><th>Solución F</th></tr></thead><tbody>${filas}</tbody></table></div>
+      <button type="button" class="boton secundario copiar-matriz">Copiar A y B (para Excel)</button>
+      <textarea hidden class="copia-matriz">${copia}</textarea>
+    </details>`;
+  }
+
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest(".copiar-matriz");
+    if (!btn) return;
+    const txt = btn.parentElement.querySelector(".copia-matriz").value;
+    const ok = () => { const t = btn.textContent; btn.textContent = "Copiado ✓"; setTimeout(() => (btn.textContent = t), 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok, () => {});
+  });
 
   // ------------------------------------------------------------------
   // dibujo del mecanismo

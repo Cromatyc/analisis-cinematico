@@ -99,6 +99,20 @@
       I4 * al4 - cruz(RP4, FP4) - T4,
     ];
     const x = resolver(A, b);
+    const sistema = {
+      A, b, x,
+      incognitas: ["F12x", "F12y", "F32x", "F32y", "F43x", "F43y", "F14x", "F14y", "T12"],
+      ecuaciones: [
+        "ΣFx eslabón 2", "ΣFy eslabón 2", "ΣM_G2 eslabón 2",
+        "ΣFx eslabón 3", "ΣFy eslabón 3", "ΣM_G3 eslabón 3",
+        "ΣFx eslabón 4", "ΣFy eslabón 4", "ΣM_G4 eslabón 4",
+      ],
+      terminosB: [
+        "m2·aG2x", "m2·aG2y", "IG2·α2",
+        "m3·aG3x − FP3x", "m3·aG3y − FP3y", "IG3·α3 − (RP3x·FP3y − RP3y·FP3x) − T3",
+        "m4·aG4x − FP4x", "m4·aG4y − FP4y", "IG4·α4 − (RP4x·FP4y − RP4y·FP4x) − T4",
+      ],
+    };
     const F12 = vec(x[0], x[1]), F32 = vec(x[2], x[3]), F43 = vec(x[4], x[5]), F14 = vec(x[6], x[7]);
     const T12 = x[8];
 
@@ -110,7 +124,7 @@
       I2 * al2 * w.w2 + I3 * al3 * w.w3 + I4 * al4 * w.w4;
 
     return resumen({
-      F12, F32, F43, F14, T12,
+      F12, F32, F43, F14, T12, sistema,
       FP3: vec(FP3.x, FP3.y), FP4: vec(FP4.x, FP4.y),
       inercia: {
         G2: vec(-m2 * aG2.x, -m2 * aG2.y), G3: vec(-m3 * aG3.x, -m3 * aG3.y), G4: vec(-m4 * aG4.x, -m4 * aG4.y),
@@ -156,7 +170,7 @@
         m3 * aG3.x - FP3.x, m3 * aG3.y - FP3.y, I3 * al3 - cruz(RP3, FP3) - T3,
         m4 * aG4.x - FP4.x, m4 * aG4.y - FP4.y,
       ];
-      return { x: resolver(A, b), k };
+      return { x: resolver(A, b), k, A, b };
     }
     let s = intentar(1);
     if (mu > 0 && s.x[6] < 0) s = intentar(-1); // la normal resultó hacia abajo: corregir el signo de la fricción
@@ -165,6 +179,21 @@
     const F12 = vec(x[0], x[1]), F32 = vec(x[2], x[3]), F43 = vec(x[4], x[5]);
     const F14 = vec(s.k * x[6], x[6]);
     const T12 = x[7];
+    const sistema = {
+      A: s.A, b: s.b, x,
+      incognitas: ["F12x", "F12y", "F32x", "F32y", "F43x", "F43y", "F14y", "T12"],
+      ecuaciones: [
+        "ΣFx eslabón 2", "ΣFy eslabón 2", "ΣM_G2 eslabón 2",
+        "ΣFx eslabón 3", "ΣFy eslabón 3", "ΣM_G3 eslabón 3",
+        "ΣFx corredera 4", "ΣFy corredera 4",
+      ],
+      terminosB: [
+        "m2·aG2x", "m2·aG2y", "IG2·α2",
+        "m3·aG3x − FP3x", "m3·aG3y − FP3y", "IG3·α3 − (RP3x·FP3y − RP3y·FP3x) − T3",
+        "m4·aG4x − FPx", "m4·aG4y − FPy",
+      ],
+      mu: s.k, // coeficiente efectivo ±μ que quedó en la matriz
+    };
 
     const V = r.V, w = r.w;
     const pot = (F, v) => F.x * v.x + F.y * v.y;
@@ -173,7 +202,7 @@
       I2 * al2 * w.w2 + I3 * al3 * w.w3;
 
     return resumen({
-      F12, F32, F43, F14, T12,
+      F12, F32, F43, F14, T12, sistema,
       FP3: vec(FP3.x, FP3.y), FP4: vec(FP4.x, FP4.y),
       friccion: F14.x,
       inercia: {
